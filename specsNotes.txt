@@ -4,3 +4,36 @@ Team has a common karbonite resource pool
 Gain 10 karbonite per round -- goes down by 1 for every 40 karbonite; min amt is 0
 Start with 100 karbonite; can be mined from earth or mars
 map has arbitrary size but earth and mars have same size
+if a square is passable a unit can occupy it 
+Karbonite deposits exist on both planets and are passable
+--deposits have limited amt of karbonite
+ONLY workers can mine karbonite deposits
+
+if bluprint or rocket is on karbonite deposit then all karbonite disappears
+
+Earth:
+passable deposits for Karbonite and impassable water depos
+Karbonite is limited on earth and karbonite is NEVER added back
+--first deposits is between x=[0,50]
+
+earth flood round 750
+
+Mars:
+passable squares and deposits for Karbonite and impassable rocky outcrops
+No karbonite @ first
+Asteroids frequently hit with lots of karbonite
+How often asteroids come is known
+
+--first deposits is between x=[0,50]
+
+earth flood round 750
+
+Units:
+types: robots and structures
+robots fight, move, and collect resources
+structures: rockets and factories
+rockets go to mars
+factories produce robots
+unit gets int ID
+
+To create structure worker must put down a blueprint
