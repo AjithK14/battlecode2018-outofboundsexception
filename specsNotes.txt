@@ -1,0 +1,6 @@
+get a turn on earth and mars
+most units should survive
+Team has a common karbonite resource pool
+Gain 10 karbonite per round -- goes down by 1 for every 40 karbonite; min amt is 0
+Start with 100 karbonite; can be mined from earth or mars
+map has arbitrary size but earth and mars have same size
