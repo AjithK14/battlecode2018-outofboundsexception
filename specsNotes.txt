@@ -37,3 +37,28 @@ factories produce robots
 unit gets int ID
 
 To create structure worker must put down a blueprint
+blueprints must be repeatedly put down until structure is created
+buying blue-prints --> lower cost for them
+Structures hv garrison which holds 8 robots
+
+NO STRUCTURES ON MARS
+
+Factories spawn robots and automatically store them in their garrison
+Rockets and factories both load and unload 
+
+Research is used to upgrade and stuff
+Only 1 upgrade can be researched @ a time and upgrade takes set amt of rounds
+Theres a queue for stuff to be researched
+**research is in branches because each robot has a branch it can go down for upgrades
+
+TEAM shared communication arrays of length 100 for each planet, but to get communication from other planet
+it would be 50 rounds late
+Player can sense all lives and location stuff on planet WITHIN that player's bots' sensing range
+Player can also GLOBALLY know if square is on planet, square is passable, coors, research, and karbonite 
+(smallest unit in this game is 1 turn)
+--Robots have a movement cooldown as well as an attack cooldown, each of which correspond to an internal heat. 
+--Robots can move only when their movement heat is less than 10, and they can only attack when their attack heat is less than 10. 
+--Both heats decrement by 10 at the start of every round, to a minimum of 0. 
+--When a robot moves, its movement heat is incremented by its movement cooldown, and likewise for when a robot attacks.
+
+MapLocation object is for planets and Location is for robots
