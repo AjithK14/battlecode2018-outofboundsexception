@@ -293,83 +293,72 @@ while True:
             for i in range(round-roundsBack, round):
                 bannedSquares[i] = None
          #possibly useless piece of code ends
-        tempUnits1 = [x for x in gc.my_units() if x.unit_type == bc.UnitType.Worker]
-        if not first_rocket:
-          for unit in tempUnits1:
-            for q in directions:
-              if gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
-
-                gc.blueprint(unit.id,bc.UnitType.Rocket,q)
-                print("ROCKET BLUEPRINTED YAH")
-                rocketLocation = gc.unit(unit.id).mapLocation().add(q)
-                whereTo[0, gc.planet()] = rocketLocation, 1, 1
-                first_rocket = True
-                break
 
         for unit in gc.my_units():
 
           if unit.unit_type == bc.UnitType.Factory:
-            
+             garrison = unit.structure_garrison()
 
-            garrison = unit.structure_garrison()
-
-            if len(garrison) > 0:
-              d = random.choice(directions) #good for now, change later
-              if gc.can_unload(unit.id, d):
-
-                print ("unloaded")
-                gc.unload(unit.id, d)
-                continue
-              else:
-
-                for tilt in tryRotate:
-
-                  newD = rotate(d, tilt)
-                  while gc.can_unload(unit.id, d):
-
-                    print ("unloaded")
-                    gc.unload(unit.id, d)
+             if len(garrison) > 0:
+                d = random.choice(directions) #good for now, change later
+                if gc.can_unload(unit.id, d):
+                  print ("unloaded")
+                  gc.unload(unit.id, d)
+                  continue
+                else:
+                  for tilt in tryRotate:
+                    newD = rotate(d, tilt)
+                    while gc.can_unload(unit.id, d):
+                      print ("unloaded")
+                      gc.unload(unit.id, d)
                       factory_move(gc.unit(unit.id))
                     break
-                
+              if touchedMars == False:
+                currentRobotArray = [0, 0, 0, 0, 0]
+                for unit in gc.my_units():
+                    if unit.unit_type == gc.UnitType.Worker:
+                      currentRobotArray[0] += 1
+                    elif unit.unit_type == gc.UnitType.Knight:
+                        currentRobotArray[1] += 1
+                    elif unit.unit_type == gc.UnitType.Rangers:
+                        currentRobotArray[2] += 1 
+                    elif unit.unit_type == gc.UnitType.Mage:
+                        currentRobotArray[3] += 1
+                    elif unit.unit_type == gc.UnitType.Healer:
+                        currentRobotArray[4] += 1
 
-             
-            if touchedMars == False:
-                  currentRobotArray = [0, 0, 0, 0, 0]
-                  for unit in gc.my_units():
-                      if unit.unit_type == bc.UnitType.Worker:
-                        currentRobotArray[0] += 1
-                      elif unit.unit_type == bc.UnitType.Knight:
-                          currentRobotArray[1] += 1
-                      elif unit.unit_type == bc.UnitType.Rangers:
-                          currentRobotArray[2] += 1 
-                      elif unit.unit_type == bc.UnitType.Mage:
-                          currentRobotArray[3] += 1
-                      elif unit.unit_type == bc.UnitType.Healer:
-                          currentRobotArray[4] += 1
-
-                      deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
-                           INITIALKHGARRAY[1] - currentRobotArray[1],
-                           INITIALKHGARRAY[2] - currentRobotArray[2],
-                           INITIALKHGARRAY[3] - currentRobotArray[3],
-                           INITIALKHGARRAY[4] - currentRobotArray[4]]
-                      if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
-                        if len(earthRocketLocations > 0):
-                          for i in range(len(robots)):
-                            whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
-                          
-                      '''else: #we're probably not building a base rn
-                        for i in range(len(robots)):
-                          whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]'''
-                      for i in range(len(deficit)):
-                        robotType = deficit.index(max(deficit))
-                        if unit.unit_type == bc.UnitType.Factory and gc.can_produce_robot(unit.id, robotType):
+                    deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+                         INITIALKHGARRAY[1] - currentRobotArray[1],
+                         INITIALKHGARRAY[2] - currentRobotArray[2],
+                         INITIALKHGARRAY[3] - currentRobotArray[3],
+                         INITIALKHGARRAY[4] - currentRobotArray[4]]
+                  if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
+                    if len(earthRocketLocations > 0):
+                      for i in range(len(robots)):
+                        whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
+                        
+                    '''else: #we're probably not building a base rn
+                      for i in range(len(robots)):
+                        whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]'''
+                  for i in range(len(deficit)):
+                      robotType = deficit.index(max(deficit))
+                      if gc.can_produce_robot(unit.id, robotType):
                           gc.produce_robot(unit.id, robotType)
                           print('produced a robot!')
                           continue
-                        else:
-                          robotProportions = getRobotProportions(round)
-
+              else: #touchedMars = true
+                robotProportions = getRobotProportions(round)
+                #build general robots here
+          if unit.unit_type == robots[0]:
+            if not first_rocket:
+              for q in directions:
+                if gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
+                  gc.blueprint(unit.id,bc.UnitType.Rocket,q)
+                  print("ROCKET BLUEPRINTED YAH")
+                  rocketLocation = gc.unit(unit.id).mapLocation().add(q)
+                  whereTo[0, gc.planet()] = rocketLocation, 1, 1
+                  first_rocket = True
+                  break
           location = unit.location
           if location.is_on_map():
               nearby = gc.sense_nearby_units(location.map_location(), 4)
