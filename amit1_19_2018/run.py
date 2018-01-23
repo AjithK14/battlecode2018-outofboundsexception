@@ -2,6 +2,7 @@ import battlecode as bc
 import random
 import sys
 from collections import deque
+import math
 import traceback
 import time
 from heapq import heappush, heappop
@@ -11,6 +12,8 @@ import os
 directions = [bc.Direction.North, bc.Direction.Northeast, bc.Direction.East,
               bc.Direction.Southeast, bc.Direction.South, bc.Direction.Southwest,
               bc.Direction.West, bc.Direction.Northwest]
+gc = bc.GameController()
+robots = [bc.UnitType.Worker, bc.UnitType.Knight, bc.UnitType.Ranger, bc.UnitType.Mage, bc.UnitType.Healer]
 
 earthMap = None
 marsMap = None
@@ -19,6 +22,8 @@ enemyStart = None
 roundsBack = 10
 maxRobotMovementHeat = 10
 
+optimalKarboniteAmount = 300 #Ajith change this if you want
+workerHarvestAmount = 3
 class Node:
     '''mapLocation = None
     depth = None
@@ -26,19 +31,20 @@ class Node:
     manhattan = 0
     children = None'''
 
-    def __init__(self, p, ml, d, go):
+    def __init__(self, p, ml, d, go, u):
         self.mapLocation = ml
         self.parent = p
         self.depth = d
         self.goal = go
         self.manHattan = 0
         self.children = deque()
+        self.unit = u
 
     def toString(self):
         return str(self.mapLocation.x) + ", " + str(self.mapLocation.y) + ", " + str(self.mapLocation.planet)
 
     def __lt__(self, other):
-        return self.manhattanDistance() < other.manhattanDistance() #not really manhattanDistance, just a heuristic I used
+        return self.heuristic() < other.heuristic() #not really manhattanDistance, just a heuristic I used
 
     def expand(self):
         for direction in directions:
@@ -46,15 +52,17 @@ class Node:
             ######only append if it's on the map and the square is passable
             if self.mapLocation.planet == bc.Planet.Earth and earthMap.on_map(newMapLocation):
                 if earthMap.is_passable_terrain_at(newMapLocation):
-                    self.children.append(Node(self, newMapLocation, self.depth+1, self.goal))
+                    self.children.append(Node(self, newMapLocation, self.depth+1, self.goal, self.unit))
             elif self.mapLocation.planet == bc.Planet.Mars and marsMap.on_map(newMapLocation):
                 if marsMap.is_passable_terrain_at(newMapLocation):
-                    self.children.append(Node(self, newMapLocation, self.depth+1, self.goal))
+                  self.children.append(Node(self, newMapLocation, self.depth+1, self.goal, self.unit))
         return self.children
 
-    def manhattanDistance(self):
-        return self.mapLocation.distance_squared_to(self.goal)+self.depth
-
+    def heuristic(self):
+      if self.mapLocation.planet == bc.Planet.Earth:
+        return math.sqrt(self.mapLocation.distance_squared_to(self.goal))+self.depth-((.1)*(earthMap.initial_karbonite_at(self.mapLocation))) #change .1 to a function of current karbonite, and round numbers
+      else:
+        return math.sqrt(self.mapLocation.distance_squared_to(self.goal))+self.depth-((.1)*(marsMap.initial_karbonite_at(self.mapLocation))) #change .1 to a function of current karbonite, and round numbers
 def invert(loc):
     newx = earthMap.width - loc.x
     newy = earthMap.height - loc.y
@@ -84,12 +92,43 @@ def notBanned(mapLocation, round):
             return False
     return True
 
+def harvestKarbonite(unit, currentLocation):
+  amount = gc.karbonite_at(currentLocation)
+  max = 0
+  maxDir = None
+  if amount > workerHarvestAmount:
+    if gc.can_harvest(unit.id, bc.Direction.Center):
+      gc.harvest(unit.id, bc.Direction.Center)
+  for direction in directions:
+    newLoc = currentLocation.add(direction)
+    if earthMap.on_map(newLoc):
+      cur = gc.karbonite_at(newLoc)
+      if cur > max:
+        max = cur
+        maxDir = direction
+
+  if max > 0:
+    if gc.can_harvest(unit.id, maxDir):
+      gc.harvest(unit.id, maxDir)
+
 def astar(unit, dest):
     if not unit.movement_heat() < maxRobotMovementHeat:
         return
     currentLocation = unit.location.map_location()
+    if unit.unit_type == robots[0] and gc.karbonite() < optimalKarboniteAmount: #robots[0] is worker
+      #print (gc.karbonite())
+      harvestKarbonite(unit, currentLocation)
+    if currentLocation.direction_to(dest) == bc.Direction.Center:
+      pathDict.pop(unit.id, str(dest))
+      return
     if (unit.id, str(dest)) in pathDict: #the program has saved where this thing has been trying to go
+
         path = pathDict[unit.id, str(dest)]
+        prev = path[0].mapLocation
+        if currentLocation.is_adjacent_to(prev) == False: #had used bugnav recently and not completely finished
+          print (str(currentLocation) + " p:" + str(prev))
+          go_to(unit, prev)
+          return
         prev = path.popleft().mapLocation
         if len(path) == 0:
             pathDict[unit.id, str(dest)] = None
@@ -97,11 +136,12 @@ def astar(unit, dest):
         if gc.can_move(unit.id, d):
             print ("sice me")
             gc.move_robot(unit.id, d)
-        else: #at this point, there is clearly an obstable, such as a factory in the way.  Calling bugnav here to try to continue a*
+            #path.popleft()
+        else: #at this point, there is clearly an obstable, such as a factory in the way.  Calling bugnav
             newDest = path.popleft().mapLocation
             go_to(unit, newDest)
     else: #the first time this program is trying to make the unit get to this destination
-        startState = Node(None, currentLocation, 0, dest)
+        startState = Node(None, currentLocation, 0, dest, unit)
         prev = set()
         fringe = []
         fringe.append(startState)
@@ -116,7 +156,9 @@ def astar(unit, dest):
                     path.append(node)
                     node = node.parent
                 path.reverse() #because it's in reverse order
+                path.popleft()
                 pathDict[unit.id, str(dest)] = path
+                astar(unit, dest)
             else:
                 children = node.expand()
                 for i in range(len(children)):
@@ -180,7 +222,7 @@ print("pystarting")
 
 # A GameController is the main type that you talk to the game with.
 # Its constructor will connect to a running game.
-gc = bc.GameController()
+
 
 
 print("pystarted")
@@ -201,46 +243,112 @@ if gc.planet() == bc.Planet.Earth:  # initializing the map, and starting locatio
     enemyStart = invert(myStart)
 
 print(os.getcwd())
-gc.queue_research(bc.UnitType.Rocket)
+gc.queue_research(bc.UnitType.Rocket) #necessary
 gc.queue_research(bc.UnitType.Worker)
 gc.queue_research(bc.UnitType.Knight)
 
 my_team = gc.team()
+STAYERS = 4 #number of robots who stay on earth
+touchedMars = False #controls whether our karbonite-harvesting group (khg) has reached mars yet.
+KHGWORKERS = 2
+KHGKNIGHTS = 2
+KHGRANGERS = 1
+KHGMAGES = 1
+KHGHEALERS = 2
+
+earthRocketLocations = list()
+baseLocations = list()
+
+KHGARRAY = [KHGWORKERS, KHGKNIGHTS, KHGRANGERS, KHGMAGES, KHGHEALERS]
+INITIALKHGARRAY = [KHGWORKERS + STAYERS, KHGKNIGHTS + STAYERS, KHGRANGERS + STAYERS, KHGMAGES + (STAYERS*0), KHGHEALERS + STAYERS]
+factoryIndex = 0 #controls what the different factories do
+
+earthWorkers = 0
+earthKnights = 0
+earthRangers = 0
+earthMages = 0
+earthHealers = 0
+
+whereTo = dict() #key is type of robot number [0 to 4], planet.  Value is x, y, errorRadius, number
 
 while True:
     # We only support Python 3, which means brackets around print()
     round = gc.round()
-
+    if round == 126:
+      workerHarvestAmount += 1
     if gc.planet() == bc.Planet.Earth:
         firstMan = gc.my_units()[0]
-        print('pyround:', round, 'time left:', gc.get_time_left_ms(), 'ms',
-      'heat:', firstMan.movement_heat(), 'loc: ', firstMan.location.map_location())
+        '''  print('pyround:', round, 'time left:', gc.get_time_left_ms(), 'ms',
+        'heat:', firstMan.movement_heat(), 'loc: ', firstMan.location.map_location())'''
+        print ('pyround:', round, 'karbonite', gc.karbonite())
         randomLocation = bc.MapLocation(bc.Planet.Earth, 0, 0)
 
         astar(firstMan, randomLocation)
+
     # frequent try/catches are a good idea
     '''try:
-       #clearing banned squares for pathfinding
+       #possibly useless piece of code begins
        if(round >= 1 + roundsBack):
            for i in range(round-roundsBack, round):
                bannedSquares[i] = None
-       # walk through our units:
-       for unit in gc.my_units():
+       #possibly useless piece of code ends
+      if touchedMars == False:
+        currentRobotArray = [0, 0, 0, 0, 0]
+        for unit in gc.my_units():
+          if unit.unit_type == gc.UnitType.Worker:
+            currentRobotArray[0] += 1
+          elif unit.unit_type == gc.UnitType.Knight:
+            currentRobotArray[1] += 1
+          elif unit.unit_type == gc.UnitType.Rangers:
+            currentRobotArray[2] += 1
+          elif unit.unit_type == gc.UnitType.Mage:
+            currentRobotArray[3] += 1
+          elif unit.unit_type == gc.UnitType.Healer:
+            currentRobotArray[4] += 1
+
+        deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+                   INITIALKHGARRAY[1] - currentRobotArray[1],
+                   INITIALKHGARRAY[2] - currentRobotArray[2]
+                   INITIALKHGARRAY[3] - currentRobotArray[3],
+                   INITIALKHGARRAY[4] - currentRobotArray[4]]
+      
+      for unit in gc.my_units():
 
            # first, factory logic
-           if unit.unit_type == bc.UnitType.Factory:
-               garrison = unit.structure_garrison()
-               if len(garrison) > 0:
-                   d = random.choice(directions)
-                   if gc.can_unload(unit.id, d):
-                       print('unloaded a knight!')
-                       gc.unload(unit.id, d)
-                       continue
-               elif gc.can_produce_robot(unit.id, bc.UnitType.Knight):
-                   gc.produce_robot(unit.id, bc.UnitType.Knight)
-                   print('produced a knight!')
-                   continue
+          if unit.unit_type == bc.UnitType.Factory:
+             garrison = unit.structure_garrison()
+             if len(garrison) > 0:
+                d = random.choice(directions) #good for now, change later
+                if gc.can_unload(unit.id, d):
+                  print ("unloaded")
+                  gc.unload(unit.id, d)
+                  continue
+                else:
+                  for tilt in tryRotate:
+                    newD = rotate(d, tilt)
+                    while gc.can_unload(unit.id, d):
+                      print ("unloaded")
+                      gc.unload(unit.id, d)
+                      break
 
+
+              if touchedMars == False:
+                if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
+                  if len(earthRocketLocations > 0):
+                    for i in range(len(robots)):
+                      whereTo[i, bc.Planet.Earth] = earthRocketLocations[0].x, earthRocketLocations[0].y, 0, KHGARRAY[i]
+                  else:
+                    for i in range(len(robots)):
+                      whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]
+                for i in range(len(deficit)):
+                  robotType = deficit.index(max(deficit))
+                  if gc.can_produce_robot(unit.id, robotType):
+                      gc.produce_robot(unit.id, robotType)
+                      print('produced a robot!')
+                      continue
+              else: #touchedMars is true and now we're going back to the standard build/ship off to mars strat
+                factoryIndex += 1
+                factoryIndex %= 5 
            # first, let's look for nearby blueprints to work on
            location = unit.location
            if location.is_on_map():
@@ -248,7 +356,7 @@ while True:
                for other in nearby:
                    if unit.unit_type == bc.UnitType.Worker and gc.can_build(unit.id, other.id):
                        gc.build(unit.id, other.id)
-                       print('built a factory!')
+                       print('built something!')
                        # move onto the next unit
                        continue
                    if other.team != my_team and gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, other.id):
