@@ -294,16 +294,6 @@ while True:
                 bannedSquares[i] = None
          #possibly useless piece of code ends
 
-        if not first_rocket:
-          for q in directions:
-            if gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
-              gc.blueprint(unit.id,bc.UnitType.Rocket,q)
-              print("ROCKET BLUEPRINTED YAH")
-              rocketLocation = gc.unit(unit.id).mapLocation().add(q)
-              whereTo[0, gc.planet()] = rocketLocation, 1, 1
-              first_rocket = True
-              break
-
         for unit in gc.my_units():
 
           if unit.unit_type == bc.UnitType.Factory:
@@ -359,7 +349,16 @@ while True:
               else: #touchedMars = true
                 robotProportions = getRobotProportions(round)
                 #build general robots here
-          
+          if unit.unit_type == robots[0]:
+            if not first_rocket:
+              for q in directions:
+                if gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
+                  gc.blueprint(unit.id,bc.UnitType.Rocket,q)
+                  print("ROCKET BLUEPRINTED YAH")
+                  rocketLocation = gc.unit(unit.id).mapLocation().add(q)
+                  whereTo[0, gc.planet()] = rocketLocation, 1, 1
+                  first_rocket = True
+                  break
           location = unit.location
           if location.is_on_map():
               nearby = gc.sense_nearby_units(location.map_location(), 4)
