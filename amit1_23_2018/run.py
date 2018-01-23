@@ -337,7 +337,7 @@ while True:
                     elif unit.unit_type == gc.UnitType.Healer:
                         currentRobotArray[4] += 1
 
-            deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+                    deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
                          INITIALKHGARRAY[1] - currentRobotArray[1],
                          INITIALKHGARRAY[2] - currentRobotArray[2],
                          INITIALKHGARRAY[3] - currentRobotArray[3],
@@ -356,9 +356,10 @@ while True:
                           gc.produce_robot(unit.id, robotType)
                           print('produced a robot!')
                           continue
-              else:
+              else: #touchedMars = true
                 robotProportions = getRobotProportions(round)
-
+                #build general robots here
+          
           location = unit.location
           if location.is_on_map():
               nearby = gc.sense_nearby_units(location.map_location(), 4)
