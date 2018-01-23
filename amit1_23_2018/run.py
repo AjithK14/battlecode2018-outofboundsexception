@@ -303,25 +303,7 @@ while True:
               whereTo[0, gc.planet()] = rocketLocation, 1, 1
               first_rocket = True
               break
-        if touchedMars == False:
-            currentRobotArray = [0, 0, 0, 0, 0]
-            for unit in gc.my_units():
-                if unit.unit_type == gc.UnitType.Worker:
-                  currentRobotArray[0] += 1
-                elif unit.unit_type == gc.UnitType.Knight:
-                    currentRobotArray[1] += 1
-                elif unit.unit_type == gc.UnitType.Rangers:
-                    currentRobotArray[2] += 1 
-                elif unit.unit_type == gc.UnitType.Mage:
-                    currentRobotArray[3] += 1
-                elif unit.unit_type == gc.UnitType.Healer:
-                    currentRobotArray[4] += 1
 
-            deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
-                         INITIALKHGARRAY[1] - currentRobotArray[1],
-                         INITIALKHGARRAY[2] - currentRobotArray[2],
-                         INITIALKHGARRAY[3] - currentRobotArray[3],
-                         INITIALKHGARRAY[4] - currentRobotArray[4]]
         for unit in gc.my_units():
 
           if unit.unit_type == bc.UnitType.Factory:
@@ -342,6 +324,24 @@ while True:
                       factory_move(gc.unit(unit.id))
                     break
               if touchedMars == False:
+                currentRobotArray = [0, 0, 0, 0, 0]
+                for unit in gc.my_units():
+                    if unit.unit_type == gc.UnitType.Worker:
+                      currentRobotArray[0] += 1
+                    elif unit.unit_type == gc.UnitType.Knight:
+                        currentRobotArray[1] += 1
+                    elif unit.unit_type == gc.UnitType.Rangers:
+                        currentRobotArray[2] += 1 
+                    elif unit.unit_type == gc.UnitType.Mage:
+                        currentRobotArray[3] += 1
+                    elif unit.unit_type == gc.UnitType.Healer:
+                        currentRobotArray[4] += 1
+
+            deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+                         INITIALKHGARRAY[1] - currentRobotArray[1],
+                         INITIALKHGARRAY[2] - currentRobotArray[2],
+                         INITIALKHGARRAY[3] - currentRobotArray[3],
+                         INITIALKHGARRAY[4] - currentRobotArray[4]]
                   if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
                     if len(earthRocketLocations > 0):
                       for i in range(len(robots)):
@@ -357,7 +357,8 @@ while True:
                           print('produced a robot!')
                           continue
               else:
-                getRobotProportions(round)
+                robotProportions = getRobotProportions(round)
+
           location = unit.location
           if location.is_on_map():
               nearby = gc.sense_nearby_units(location.map_location(), 4)
