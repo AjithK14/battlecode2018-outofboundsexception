@@ -213,6 +213,7 @@ def go_to_coordinates(unit, x, y, planet):
     return go_to(unit, dest)
 
 
+
 print("pystarting")
 
 # A GameController is the main type that you talk to the game with.
@@ -267,6 +268,10 @@ earthHealers = 0
 whereTo = dict() #key is type of robot number [0 to 4], planet.  Value is maplocation, errorRadius, number
 first_rocket = False
 firstRocketBuilt = False
+
+def getRobotProportions(round):
+  return KHGARRAY #will change the proportions so that it is a fnction of round
+
 while True:
     # We only support Python 3, which means brackets around print()
     round = gc.round()
@@ -295,7 +300,7 @@ while True:
               gc.blueprint(unit.id,bc.UnitType.Rocket,q)
               print("ROCKET BLUEPRINTED YAH")
               rocketLocation = gc.unit(unit.id).mapLocation().add(q)
-              whereTo[0, gc.planet()] = rocketLocation
+              whereTo[0, gc.planet()] = rocketLocation, 1, 1
               first_rocket = True
               break
         if touchedMars == False:
@@ -312,11 +317,11 @@ while True:
                 elif unit.unit_type == gc.UnitType.Healer:
                     currentRobotArray[4] += 1
 
-        deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
-                     INITIALKHGARRAY[1] - currentRobotArray[1],
-                     INITIALKHGARRAY[2] - currentRobotArray[2],
-                     INITIALKHGARRAY[3] - currentRobotArray[3],
-                     INITIALKHGARRAY[4] - currentRobotArray[4]]
+            deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+                         INITIALKHGARRAY[1] - currentRobotArray[1],
+                         INITIALKHGARRAY[2] - currentRobotArray[2],
+                         INITIALKHGARRAY[3] - currentRobotArray[3],
+                         INITIALKHGARRAY[4] - currentRobotArray[4]]
         for unit in gc.my_units():
 
           if unit.unit_type == bc.UnitType.Factory:
@@ -335,26 +340,24 @@ while True:
                       print ("unloaded")
                       gc.unload(unit.id, d)
                       factory_move(gc.unit(unit.id))
-                      break
-          if touchedMars == False:
-              if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
-                if len(earthRocketLocations > 0):
-                  for i in range(len(robots)):
-                    whereTo[i, bc.Planet.Earth] = earthRocketLocations[0].x, earthRocketLocations[0].y, 1, KHGARRAY[i]
-                
-                '''else: #we're probably not building a base rn
-                  for i in range(len(robots)):
-                    whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]'''
-              for i in range(len(deficit)):
-                  robotType = deficit.index(max(deficit))
-                  if gc.can_produce_robot(unit.id, robotType):
-                      gc.produce_robot(unit.id, robotType)
-                      print('produced a robot!')
-                      continue
-          else: #touchedMars is true and now we're going back to the standard build/ship off to mars strat
-              factoryIndex += 1
-              factoryIndex %= 5 
-             # first, let's look for nearby blueprints to work on
+                    break
+              if touchedMars == False:
+                  if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
+                    if len(earthRocketLocations > 0):
+                      for i in range(len(robots)):
+                        whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
+                        
+                    '''else: #we're probably not building a base rn
+                      for i in range(len(robots)):
+                        whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]'''
+                  for i in range(len(deficit)):
+                      robotType = deficit.index(max(deficit))
+                      if gc.can_produce_robot(unit.id, robotType):
+                          gc.produce_robot(unit.id, robotType)
+                          print('produced a robot!')
+                          continue
+              else:
+                getRobotProportions(round)
           location = unit.location
           if location.is_on_map():
               nearby = gc.sense_nearby_units(location.map_location(), 4)
