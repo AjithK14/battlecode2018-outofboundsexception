@@ -363,6 +363,14 @@ firstRocketLaunched=False
 def getRobotProportions(round):
   return KHGARRAY #will change the proportions so that it is a fnction of round
 
+if gc.planet() == bc.Planet.Earth:
+  w=earthMap.width
+  h=earthMap.height
+else:
+  marsMap=gc.starting_map(bc.Planet.Mars)
+  w=marsMap.width
+  h=marsMap.height
+  
 while True:
     # We only support Python 3, which means brackets around print()
     round = gc.round()
