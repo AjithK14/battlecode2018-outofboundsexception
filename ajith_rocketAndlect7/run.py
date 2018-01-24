@@ -14,8 +14,7 @@ directions = [bc.Direction.North, bc.Direction.Northeast, bc.Direction.East,
               bc.Direction.West, bc.Direction.Northwest]
 gc = bc.GameController()
 robots = [bc.UnitType.Mage, bc.UnitType.Knight, bc.UnitType.Ranger, bc.UnitType.Mage, bc.UnitType.Ranger]
-
-earthMap = None
+earthMap = gc.starting_map(bc.Planet.Earth)
 marsMap = None
 start = None
 enemyStart = None
@@ -365,7 +364,7 @@ while True:
             if not unit.location.is_in_garrison():
 
               if unit.team!=my_team:
-                
+
                 dmap.addDisk(unit.location.map_location(),50,1)
           for unit in gc.my_units():
         #possibly useless piece of code begins
