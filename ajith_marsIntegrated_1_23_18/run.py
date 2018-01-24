@@ -326,9 +326,9 @@ while True:
                 
           if unit.unit_type == bc.UnitType.Factory:
 
-             garrison = unit.structure_garrison()
+              garrison = unit.structure_garrison()
 
-             if len(garrison) > 0:
+              if len(garrison) > 0:
                 d = random.choice(directions) #good for now, change later
                 if gc.can_unload(unit.id, d):
                   print ("unloaded")
