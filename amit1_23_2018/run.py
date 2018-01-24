@@ -264,7 +264,7 @@ earthKnights = 0
 earthRangers = 0
 earthMages = 0
 earthHealers = 0
-
+vrgn=True
 whereTo = dict() #key is type of robot number [0 to 4], planet.  Value is maplocation, errorRadius, number
 first_rocket = False
 firstRocketBuilt = False
@@ -290,12 +290,42 @@ while True:
     # frequent try/catches are a good idea
     try:
         #possibly useless piece of code begins
-        if(round >= 1 + roundsBack):
+          if(round >= 1 + roundsBack):
             for i in range(round-roundsBack, round):
-                bannedSquares[i] = None
+              bannedSquares[i] = None
          #possibly useless piece of code ends
+          if unit.unit_type == bc.UnitType.Rocket:
+            if gc.planet() == bc.Planet.Earth:
+              garrison == unit.structure_garrison()
+              countNeeded = 8
+              if vrgn == False:
+                countNeeded = 6
+              if len(garrison) >= countNeeded and len(garrison) <= 8:
+                tempPlanetMap = gc.planet_map(bc.Planet.Mars)
+                tempLoc = MapLocation(bc.Planet.Mars, (int)(
+                    Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
+                if gc.can_launch_rocket(unit.id, tempLoc):
+                  gc.launch_rocket(unit.id, tempLoc)
+                  vrgn = False
+          else:
+              if len(garrison) > 0:
+                d = random.choice(directions)  # good for now, change later
+                if gc.can_unload(unit.id, d):
+
+                  print ("unloaded")
+                  gc.unload(unit.id, d)
+                  continue
+                else:
+                  for tilt in tryRotate:
+
+                    newD = rotate(d, tilt)
+                    while gc.can_unload(unit.id, d):
+                      print ("unloaded")
+                      gc.unload(unit.id, d)
+                      factory_move(gc.unit(unit.id))
+                
           if unit.unit_type == bc.UnitType.Factory:
-             
+
              garrison = unit.structure_garrison()
 
              if len(garrison) > 0:
