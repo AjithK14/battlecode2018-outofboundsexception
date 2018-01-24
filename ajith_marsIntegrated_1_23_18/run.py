@@ -389,7 +389,7 @@ while True:
                     if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
                       gc.blueprint(unit.id,bc.UnitType.Rocket,q)
                       print("ROCKET BLUEPRINTED YAH")
-                      rocketLocation = gc.unit(unit.id).mapLocation().add(q)
+                      rocketLocation = gc.unit(unit.id).location.map_location().add(q)
                       whereTo[0, gc.planet()] = rocketLocation, 1, 1
                       first_rocket = True
                       break
