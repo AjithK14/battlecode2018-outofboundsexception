@@ -377,7 +377,7 @@ while True:
         #possibly useless piece of code begins
              #possibly useless piece of code ends
               if unit.unit_type == bc.UnitType.Rocket:
-                if not first_rocket:
+                if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
                   for q in directions:
                     if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
                       gc.blueprint(unit.id,bc.UnitType.Rocket,q)
@@ -386,7 +386,7 @@ while True:
                       #whereTo[0, gc.planet()] = rocketLocation, 1, 1
                       first_rocket = True
                       break
-                if gc.planet() == bc.Planet.Earth:
+                if unit.location.is_on_planet(bc.Planet.Earth):
                   garrison == unit.structure_garrison()
                   countNeeded = 8
                   if vrgn == False:
@@ -438,7 +438,6 @@ while True:
                   if touchedMars: #touchedMars = true
                     robotProportions = getRobotProportions(round)
                     #build general robots here'''
-              if unit.unit_type == bc.UnitType.Rocket:
                 
               location = unit.location
               if location.is_on_map():
@@ -479,6 +478,7 @@ while True:
                             fuzzygoto(unit,dest)
                   
                   if unit.unit_type == bc.UnitType.Factory:
+                    
                     garrison = unit.structure_garrison()
                     if len(garrison) > 0:#ungarrison
                       d = random.choice(directions)
