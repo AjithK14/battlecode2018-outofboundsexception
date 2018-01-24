@@ -294,21 +294,8 @@ while True:
             for i in range(round-roundsBack, round):
                 bannedSquares[i] = None
          #possibly useless piece of code ends
-
-        for unit in gc.my_units():
-          if unit.unit_type == bc.UnitType.Rocket:
-            if gc.planet() == bc.Planet.Earth:
-              garrison == unit.structure_garrison()
-              countNeeded = 8
-              if len(garrison) >= countNeeded and len(garrison) <= 8:
-                tempPlanetMap = gc.planet_map(bc.Planet.Mars)
-                tempLoc = MapLocation(bc.Planet.Mars, (int)(
-                    Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
-                if gc.can_launch_rocket(unit.id, tempLoc):
-                  gc.launch_rocket(unit.id, tempLoc)
-                  firstRocketLaunched=True
-                  #vrgn = False
           if unit.unit_type == bc.UnitType.Factory:
+             
              garrison = unit.structure_garrison()
 
              if len(garrison) > 0:
