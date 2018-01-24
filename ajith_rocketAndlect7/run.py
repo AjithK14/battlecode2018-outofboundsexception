@@ -151,6 +151,9 @@ bannedSquares = dict()
 pathDict = dict() #set that stores a tuple containing the unit, current location, and the path to its destination
 tryRotate = [0, -1, 1, -2, 2, -4, 4, -3, -3, -5, 5]
 deadEndTryRotate = [-3, 3, -5, 5, -4, 4]
+my_team = gc.team()
+if my_team==bc.Team.Blue:enemy_team = bc.Team.Red
+else: enemy_team = bc.Team.Blue
 
 def notBanned(mapLocation, round):
     newtup = (mapLocation.planet, mapLocation.x, mapLocation.y)
