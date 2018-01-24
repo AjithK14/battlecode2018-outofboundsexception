@@ -386,7 +386,7 @@ while True:
               if unit.unit_type == robots[0]:
                 if not first_rocket:
                   for q in directions:
-                    if gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
+                    if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
                       gc.blueprint(unit.id,bc.UnitType.Rocket,q)
                       print("ROCKET BLUEPRINTED YAH")
                       rocketLocation = gc.unit(unit.id).mapLocation().add(q)
