@@ -363,8 +363,10 @@ while True:
           dmap = mmap(w,h)
           for unit in gc.units():
             if not unit.location.is_in_garrison():
+
               if unit.team!=my_team:
-          dmap.addDisk(unit.location.map_location(),50,1)
+                
+                dmap.addDisk(unit.location.map_location(),50,1)
           for unit in gc.my_units():
         #possibly useless piece of code begins
               if(round >= 1 + roundsBack):
