@@ -373,6 +373,17 @@ while True:
               if unit.team!=my_team:
 
                 dmap.addDisk(unit.location.map_location(),50,1)
+          numWorkers = 0
+          blueprintLocation = None
+          blueprintWaiting = False
+          for unit in gc.my_units():
+            if unit.unit_type== bc.UnitType.Factory:
+              if not unit.structure_is_built():
+                ml = unit.location.map_location()
+                blueprintLocation = ml
+                blueprintWaiting = True
+            if unit.unit_type== bc.UnitType.Worker:
+              numWorkers+=1
           for unit in gc.my_units():
         #possibly useless piece of code begins
              #possibly useless piece of code ends
@@ -461,6 +472,14 @@ while True:
                       if gc.can_build(unit.id,adjacent.id):
                         gc.build(unit.id,adjacent.id)
                         continue
+                    #head toward blueprint location
+                    if gc.is_move_ready(unit.id):
+                      if first_rocket:
+                        ml = unit.location.map_location()
+                        bdist = ml.distance_squared_to(blueprintLocation)
+                        if bdist>2:
+                          fuzzygoto(unit,blueprintLocation)
+                          continue
                     #harvest karbonite from nearby
                     mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
                     if mostK>0:#found some karbonite to harvest
@@ -478,7 +497,7 @@ while True:
                             fuzzygoto(unit,dest)
                   
                   if unit.unit_type == bc.UnitType.Factory:
-                    
+
                     garrison = unit.structure_garrison()
                     if len(garrison) > 0:#ungarrison
                       d = random.choice(directions)
