@@ -60,6 +60,13 @@ class mmap():
         bestAmt=amt
         bestLoc=loc
     return bestAmt, bestLoc
+passableMap = mmap(earthMap.width,earthMap.height);
+kMap = mmap(earthMap.width,earthMap.height);
+for x in range(earthMap.width):
+  for y in range(earthMap.height):
+    ml = bc.MapLocation(bc.Planet.Earth,x,y);
+    passableMap.set(ml,earthMap.is_passable_terrain_at(ml))
+    kMap.set(ml,earthMap.initial_karbonite_at(ml))
 workerHarvestAmount = 3
 #generate an ordered list of karbonite locations, sorted by distance to start
 tOrderStart=time.time()
