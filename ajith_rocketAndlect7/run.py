@@ -458,26 +458,6 @@ while True:
                               gc.unload(unit.id, d)
                               factory_move(gc.unit(unit.id))
                       
-                if unit.unit_type == bc.UnitType.Factory:
-
-                    garrison = unit.structure_garrison()
-
-                    if len(garrison) > 0:
-                      d = random.choice(directions) #good for now, change later
-                      if gc.can_unload(unit.id, d):
-                        print ("unloaded")
-                        gc.unload(unit.id, d)
-                        continue
-                      else:
-                        for tilt in tryRotate:
-                          newD = rotate(d, tilt)
-                          while gc.can_unload(unit.id, d):
-                            print ("unloaded")
-                            gc.unload(unit.id, d)
-                            factory_move(gc.unit(unit.id))
-                          break
-                    if touchedMars: #touchedMars = true
-                      robotProportions = getRobotProportions(round)
                 if unit.unit_type == bc.UnitType.Worker:
                   if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
                     for q in directions:
