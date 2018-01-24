@@ -369,7 +369,9 @@ while True:
                             if len(earthRocketLocations) > 0:
 
                                 for i in range(len(robots)):
-                                    whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
+
+                                   #whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
+                                   superUnce=0
                             
                         '''else: #we're probably not building a base rn
                           for i in range(len(robots)):
@@ -390,7 +392,7 @@ while True:
                       gc.blueprint(unit.id,bc.UnitType.Rocket,q)
                       print("ROCKET BLUEPRINTED YAH")
                       rocketLocation = gc.unit(unit.id).location.map_location().add(q)
-                      whereTo[0, gc.planet()] = rocketLocation, 1, 1
+                      #whereTo[0, gc.planet()] = rocketLocation, 1, 1
                       first_rocket = True
                       break
               location = unit.location
