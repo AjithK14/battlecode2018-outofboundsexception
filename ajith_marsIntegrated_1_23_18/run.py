@@ -306,6 +306,7 @@ while True:
                     tempLoc = MapLocation(bc.Planet.Mars, (int)(
                         Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
                     if gc.can_launch_rocket(unit.id, tempLoc):
+                      print("ROCKET LAUNCHED!!!!!!!!")
                       gc.launch_rocket(unit.id, tempLoc)
                       vrgn = False
                 else:
