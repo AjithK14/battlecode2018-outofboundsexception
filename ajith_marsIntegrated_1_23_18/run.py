@@ -291,6 +291,7 @@ while True:
           for unit in gc.my_units():
         #possibly useless piece of code begins
               if(round >= 1 + roundsBack):
+
                 for i in range(round-roundsBack, round):
                   bannedSquares[i] = None
              #possibly useless piece of code ends
@@ -307,22 +308,23 @@ while True:
                     if gc.can_launch_rocket(unit.id, tempLoc):
                       gc.launch_rocket(unit.id, tempLoc)
                       vrgn = False
-              else:
-                  if len(garrison) > 0:
-                    d = random.choice(directions)  # good for now, change later
-                    if gc.can_unload(unit.id, d):
+                else:
+                    garrison == unit.structure_garrison()
+                    if len(garrison) > 0:
+                      d = random.choice(directions)  # good for now, change later
+                      if gc.can_unload(unit.id, d):
 
-                      print ("unloaded")
-                      gc.unload(unit.id, d)
-                      continue
-                    else:
-                      for tilt in tryRotate:
+                        print ("unloaded")
+                        gc.unload(unit.id, d)
+                        continue
+                      else:
+                        for tilt in tryRotate:
 
-                        newD = rotate(d, tilt)
-                        while gc.can_unload(unit.id, d):
-                          print ("unloaded")
-                          gc.unload(unit.id, d)
-                          factory_move(gc.unit(unit.id))
+                          newD = rotate(d, tilt)
+                          while gc.can_unload(unit.id, d):
+                            print ("unloaded")
+                            gc.unload(unit.id, d)
+                            factory_move(gc.unit(unit.id))
                     
               if unit.unit_type == bc.UnitType.Factory:
 
