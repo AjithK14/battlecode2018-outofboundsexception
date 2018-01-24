@@ -398,36 +398,77 @@ while True:
               location = unit.location
               if location.is_on_map():
                   nearby = gc.sense_nearby_units(location.map_location(), 4)
-                  #ajith your strat starts here
-                  for other in nearby:
-                      if not firstRocketBuilt and unit.unit_type == bc.UnitType.Rocket and gc.can_build(unit.id, other.id):
-                          gc.build(unit.id, other.id)
-                          print('built a rocket!')
-                          firstRocketBuilt = True
+                  if unit.unit_type == bc.UnitType.Worker:
+                    d = random.choice(directions)
+                    if numWorkers<10:
+                      replicated=False
+                      for d in directions:
+                        if gc.can_replicate(unit.id,d):
+                          gc.replicate(unit.id,d)
+                          replicated=True
+                          break
+                      if replicated:continue
+                    if gc.karbonite() > bc.UnitType.Factory.blueprint_cost():#blueprint
+                      if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
+                        gc.blueprint(unit.id, bc.UnitType.Factory, d)
+                        continue
+                    adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 2)
+                    for adjacent in adjacentUnits:#build
+                      if gc.can_build(unit.id,adjacent.id):
+                        gc.build(unit.id,adjacent.id)
+                        continue
+                    #head toward blueprint location
+                    if gc.is_move_ready(unit.id):
+                      if blueprintWaiting:
+                        ml = unit.location.map_location()
+                        bdist = ml.distance_squared_to(blueprintLocation)
+                        if bdist>2:
+                          fuzzygoto(unit,blueprintLocation)
                           continue
-                      if unit.unit_type == bc.UnitType.Rocket and gc.can_load(other.id,unit.id):
-                          gc.load(other.id,unit.id)
-                          print('loaded into the rocket!')
-                      if other.team != my_team and gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, other.id):
-                          print('attacked a thing!')
-                          gc.attack(unit.id, other.id)
-                          continue
-                      if unit.unit_type == bc.UnitType.Worker and gc.can_build(unit.id, other.id):
-                          gc.build(unit.id, other.id)
-                          print('built a factory!')
-                          continue
+                    #harvest karbonite from nearby
+                    mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
+                    if mostK>0:#found some karbonite to harvest
+                      if gc.can_harvest(unit.id,bestDir):
+                        gc.harvest(unit.id,bestDir)
+                        continue
+                    elif gc.is_move_ready(unit.id):#need to go looking for karbonite
+                      if len(kLocs)>0:
+                        dest=kLocs[0]
+                        if gc.can_sense_location(dest):
+                          kAmt = gc.karbonite_at(dest)
+                          if kAmt==0:
+                            kLocs.pop(0)
+                          else:
+                            fuzzygoto(unit,dest)
+                  
+                  if unit.unit_type == bc.UnitType.Factory:
+                    garrison = unit.structure_garrison()
+                    if len(garrison) > 0:#ungarrison
+                      d = random.choice(directions)
+                      if gc.can_unload(unit.id, d):
+                        gc.unload(unit.id, d)
+                        continue
+                    elif gc.can_produce_robot(unit.id, bc.UnitType.Ranger):#produce Mages
+                      gc.produce_robot(unit.id, bc.UnitType.Ranger)
+                      continue
+                  
+                  if unit.unit_type == bc.UnitType.Ranger:
+                    if not unit.location.is_in_garrison():#can't move from inside a factory
+                      attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
+                      if len(attackableEnemies)>0:
+                        if gc.is_attack_ready(unit.id):
+                          gc.attack(unit.id, attackableEnemies[0].id)
+                      elif gc.is_move_ready(unit.id):
+                        nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
+                        if len(nearbyEnemies)>0:
+                          destination=nearbyEnemies[0].location.map_location()
+                        else:
+                          destination=enemyStart
+                        fuzzygoto(unit,destination)
 
                   #ajith your strat ends here
               # okay, there weren't any dudes around
               # pick a random direction:
-              d = random.choice(directions)
-
-              # or, try to build a factory:
-              if gc.karbonite() > bc.UnitType.Factory.blueprint_cost() and gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
-                  gc.blueprint(unit.id, bc.UnitType.Factory, d)
-              # and if that fails, try to move
-              elif gc.is_move_ready(unit.id) and gc.can_move(unit.id, d):
-                  gc.move_robot(unit.id, d)
 
        #possibly useless piece of code begins
        
