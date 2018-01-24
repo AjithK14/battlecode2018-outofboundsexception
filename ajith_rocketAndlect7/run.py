@@ -385,9 +385,9 @@ while True:
             if unit.unit_type== bc.UnitType.Worker:
               numWorkers+=1
           for unit in gc.my_units():
-        #possibly useless piece of code begins
+             #possibly useless piece of code begins
              #possibly useless piece of code ends
-              if unit.unit_type == bc.UnitType.Rocket:
+              if unit.unit_type == bc.UnitType.Worker:
                 if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
                   for q in directions:
                     if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
@@ -397,6 +397,7 @@ while True:
                       #whereTo[0, gc.planet()] = rocketLocation, 1, 1
                       first_rocket = True
                       break
+              if unit.unit_type == bc.UnitType.Rocket:
                 if unit.location.is_on_planet(bc.Planet.Earth):
                   garrison == unit.structure_garrison()
                   countNeeded = 8
