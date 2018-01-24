@@ -375,10 +375,6 @@ while True:
                 dmap.addDisk(unit.location.map_location(),50,1)
           for unit in gc.my_units():
         #possibly useless piece of code begins
-              if(round >= 1 + roundsBack):
-
-                for i in range(round-roundsBack, round):
-                  bannedSquares[i] = None
              #possibly useless piece of code ends
               if unit.unit_type == bc.UnitType.Rocket:
                 if gc.planet() == bc.Planet.Earth:
