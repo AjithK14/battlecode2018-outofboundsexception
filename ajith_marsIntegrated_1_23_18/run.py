@@ -351,7 +351,7 @@ while True:
                           currentRobotArray[0] += 1
                         elif unit.unit_type == bc.UnitType.Knight:
                             currentRobotArray[1] += 1
-                        elif unit.unit_type == bc.UnitType.Rangers:
+                        elif unit.unit_type == bc.UnitType.Ranger:
                             currentRobotArray[2] += 1 
                         elif unit.unit_type == bc.UnitType.Mage:
                             currentRobotArray[3] += 1
