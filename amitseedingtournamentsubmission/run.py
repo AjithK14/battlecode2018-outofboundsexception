@@ -419,8 +419,8 @@ while True:
           objectNumID = -1
           for i in range(len(robots)):
             if unit.unit_type == robots[i]:
-            objectNumID = i
-            break
+              objectNumID = i
+              break
           if objectNumID != -1: #meaning this unit is a robot
             if objectNumID == 0: #meaning that this unit is a worker
               if not first_rocket:
@@ -433,7 +433,7 @@ while True:
                     whereTo[0, str(gc.planet())] = rocketLocation, 1, 1 #calling workers here
                     first_rocket = True
                     break
-            if objectNumID, str(gc.planet()) in whereTo:
+            if (objectNumID, str(gc.planet())) in whereTo:
               tup = whereTo[objectNumID, str(gc.planet())]
               dest = tup[0]
               errorRadius = tup[1]
