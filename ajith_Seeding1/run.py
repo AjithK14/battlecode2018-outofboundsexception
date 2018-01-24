@@ -282,6 +282,7 @@ while True:
         '''  print('pyround:', r ound, 'time left:', gc.get_time_left_ms(), 'ms',
         'heat:', firstMan.movement_heat(), 'loc: ', firstMan.location.map_location())'''
         print ('pyround:', round, 'karbonite', gc.karbonite())
+        print("ROCKET", firstRocketBuilt)
         randomLocation = bc.MapLocation(bc.Planet.Earth, 0, 0)
 
         #astar(firstMan, randomLocation)
@@ -301,7 +302,7 @@ while True:
 
                 gc.blueprint(unit.id,bc.UnitType.Rocket,q)
                 print("ROCKET BLUEPRINTED YAH")
-                rocketLocation = gc.unit(unit.id).mapLocation().add(q)
+                rocketLocation = gc.unit(unit.id).location.map_location().add(q)
                 whereTo[0, gc.planet()] = rocketLocation, 1, 1
                 first_rocket = True
                 break
