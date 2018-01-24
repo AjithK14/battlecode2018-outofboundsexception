@@ -21,9 +21,64 @@ start = None
 enemyStart = None
 roundsBack = 10
 maxRobotMovementHeat = 10
-
+class mmap():
+  def __init__(self,width,height):
+    self.width=width
+    self.height=height
+    self.arr=[[0]*self.height for i in range(self.width)];
+  def onMap(self,loc):
+    if (loc.x<0) or (loc.y<0) or (loc.x>=self.width) or (loc.y>=self.height): return False
+    return True
+  def get(self,mapLocation):
+    if not self.onMap(mapLocation):return -1
+    return self.arr[mapLocation.x][mapLocation.y]
+  def set(self,mapLocation,val):
+    self.arr[mapLocation.x][mapLocation.y]=val
+  def printout(self):
+    print('printing map:')
+    for y in range(self.height):
+      buildstr=''
+      for x in range(self.width):
+        buildstr+=format(self.arr[x][self.height-1-y],'2d')
+      print(buildstr)
+  def addDisk(self,mapLocation,r2,val):
+    locs = gc.all_locations_within(mapLocation,r2)
+    for loc in locs:
+      if self.onMap(loc):
+        self.set(loc,self.get(loc)+val)
+  def multiply(self,mmap2):
+    for x in range(self.width):
+      for y in range(self.height):
+        ml = bc.MapLocation(bc.Planet.Earth,x,y);
+        self.set(ml,self.get(ml)*mmap2.get(ml))
+  def findBest(self,mapLocation,r2):
+    locs = gc.all_locations_within(mapLocation,r2)
+    bestAmt = 0
+    bestLoc = None
+    for loc in locs:
+      amt = self.get(loc)
+      if amt>bestAmt:
+        bestAmt=amt
+        bestLoc=loc
+    return bestAmt, bestLoc
 workerHarvestAmount = 3
-
+#generate an ordered list of karbonite locations, sorted by distance to start
+tOrderStart=time.time()
+kLocs = []
+currentLocs = []
+evalMap = mmap(earthMap.width,earthMap.height)
+for unit in gc.my_units():
+  currentLocs.append(unit.location.map_location())
+while(len(currentLocs)>0):
+  nextLocs = []
+  for loc in currentLocs:
+    for dir in directions:
+      newPlace = loc.add(dir)
+      if evalMap.get(newPlace)==0:
+        evalMap.set(newPlace,1)
+        nextLocs.append(newPlace)
+        if kMap.get(newPlace)>0:
+          kLocs.append(loc)
 def factory_move(robot_id): #move robot away from factory -- this method takes the robot id
   for i in direction:
     if gc.can_move(robot_id,i):
@@ -187,7 +242,16 @@ def rotate(dir, amount):
     ind = directions.index(dir)
     return directions[(ind + amount) % 8]
 
-
+def fuzzygoto(unit,dest):
+  if unit.location.map_location()==dest:return
+  toward = unit.location.map_location().direction_to(dest)
+  for tilt in tryRotate:
+    d = rotate(toward,tilt)
+    newLoc = unit.location.map_location().add(d)
+    if dmap.get(newLoc)==0:
+      if gc.can_move(unit.id, d):
+        gc.move_robot(unit.id,d)
+        break
 def fuzzy_go_to(unit, dest):  
     if not unit.movement_heat() < maxRobotMovementHeat:
         return
@@ -211,7 +275,15 @@ def fuzzy_go_to(unit, dest):
 def go_to_coordinates(unit, x, y, planet):
     dest = bc.MapLocation(planet, x, y)
     return go_to(unit, dest)
-
+def bestKarboniteDirection(loc):
+  mostK = 0
+  bestDir = None
+  for dir in allDirections:
+    newK = checkK(loc.add(dir))
+    if newK>mostK:
+      mostK=newK
+      bestDir=dir
+  return mostK, bestDir 
 
 
 print("pystarting")
@@ -288,6 +360,11 @@ while True:
         #astar(firstMan, randomLocation)
     # frequent try/catches are a good idea
     try:
+          dmap = mmap(w,h)
+          for unit in gc.units():
+            if not unit.location.is_in_garrison():
+              if unit.team!=my_team:
+          dmap.addDisk(unit.location.map_location(),50,1)
           for unit in gc.my_units():
         #possibly useless piece of code begins
               if(round >= 1 + roundsBack):
@@ -417,14 +494,6 @@ while True:
                       if gc.can_build(unit.id,adjacent.id):
                         gc.build(unit.id,adjacent.id)
                         continue
-                    #head toward blueprint location
-                    if gc.is_move_ready(unit.id):
-                      if blueprintWaiting:
-                        ml = unit.location.map_location()
-                        bdist = ml.distance_squared_to(blueprintLocation)
-                        if bdist>2:
-                          fuzzygoto(unit,blueprintLocation)
-                          continue
                     #harvest karbonite from nearby
                     mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
                     if mostK>0:#found some karbonite to harvest
