@@ -367,9 +367,8 @@ while True:
                           whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]'''
                       for i in range(len(deficit)):
                         robotType = deficitRobotDictionary[deficit.index(max(deficit))]
-
-                        if unit.unit_type == bc.UnitType.Factory and gc.can_produce_robot(unit.id, robotType):
-                          gc.produce_robot(unit.id, robotType)
+                        if unit.unit_type == bc.UnitType.Factory and gc.can_produce_robot(unit.id, bc.UnitType.Mage):
+                          gc.produce_robot(unit.id, bc.UnitType.Mage)
                           print('produced a robot!')
                           continue
                         else:
