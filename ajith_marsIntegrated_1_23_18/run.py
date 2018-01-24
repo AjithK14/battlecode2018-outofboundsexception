@@ -361,20 +361,21 @@ while True:
                          INITIALKHGARRAY[2] - currentRobotArray[2],
                          INITIALKHGARRAY[3] - currentRobotArray[3],
                          INITIALKHGARRAY[4] - currentRobotArray[4]]
-                  if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
-                    if len(earthRocketLocations > 0):
-                      for i in range(len(robots)):
-                        whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
+                    if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
+                    if len(earthRocketLocations) > 0:
+
+                        for i in range(len(robots)):
+                          whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
                         
                     '''else: #we're probably not building a base rn
                       for i in range(len(robots)):
                         whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]'''
-                  for i in range(len(deficit)):
-                      robotType = deficit.index(max(deficit))
-                      if gc.can_produce_robot(unit.id, robotType):
-                          gc.produce_robot(unit.id, robotType)
-                          print('produced a robot!')
-                          continue
+                    for i in range(len(deficit)):
+                        robotType = deficit.index(max(deficit))
+                        if gc.can_produce_robot(unit.id, robotType):
+                            gc.produce_robot(unit.id, robotType)
+                            print('produced a robot!')
+                            continue
               else: #touchedMars = true
                 robotProportions = getRobotProportions(round)
                 #build general robots here
