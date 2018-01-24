@@ -181,6 +181,10 @@ def harvestKarbonite(unit, currentLocation):
   if max > 0:
     gc.harvest(unit.id, maxDir)
 
+def checkK(loc):
+  if not onEarth(loc): return 0
+  return gc.karbonite_at(loc)
+
 def astar(unit, dest):
     if not unit.movement_heat() < maxRobotMovementHeat:
         return
@@ -502,7 +506,7 @@ while True:
                       ml = unit.location.map_location()
                       bdist = ml.distance_squared_to(blueprintLocation)
                       if bdist>2:
-                        astar(unit,blueprintLocation)
+                        fuzzygoto(unit,blueprintLocation)
                         continue
                   #harvest karbonite from nearby
                   mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
@@ -518,7 +522,7 @@ while True:
                         if kAmt==0:
                           kLocs.pop(0)
                         else:
-                          astar(unit,dest)
+                          fuzzygoto(unit,dest)
                 
                 if unit.unit_type == bc.UnitType.Factory:
 
@@ -544,7 +548,7 @@ while True:
                         destination=nearbyEnemies[0].location.map_location()
                       else:
                         destination=enemyStart
-                      astar(unit,destination)
+                      fuzzygoto(unit,destination)
 
                 
                  #possibly useless piece of code begins
