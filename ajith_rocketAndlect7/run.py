@@ -85,6 +85,7 @@ while(len(currentLocs)>0):
         nextLocs.append(newPlace)
         if kMap.get(newPlace)>0:
           kLocs.append(loc)
+  currentLocs=nextLocs
 def factory_move(robot_id): #move robot away from factory -- this method takes the robot id
   for i in direction:
     if gc.can_move(robot_id,i):
@@ -377,7 +378,7 @@ while True:
         #astar(firstMan, randomLocation)
     # frequent try/catches are a good idea
     try:
-          '''
+          
           dmap = mmap(w,h)
           for unit in gc.units():
             if not unit.location.is_in_garrison():
@@ -385,7 +386,7 @@ while True:
               if unit.team!=my_team:
 
                 dmap.addDisk(unit.location.map_location(),50,1)
-          '''
+          
           numWorkers = 0
           blueprintLocation = None
           blueprintWaiting = False
