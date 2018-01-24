@@ -275,6 +275,7 @@ def getRobotProportions(round):
 while True:
     # We only support Python 3, which means brackets around print()
     round = gc.round()
+    print("ROCKET", first_rocket)
     if round == 126:
       workerHarvestAmount += 1
     if gc.planet() == bc.Planet.Earth:
@@ -282,7 +283,7 @@ while True:
         '''  print('pyround:', r ound, 'time left:', gc.get_time_left_ms(), 'ms',
         'heat:', firstMan.movement_heat(), 'loc: ', firstMan.location.map_location())'''
         print ('pyround:', round, 'karbonite', gc.karbonite())
-        print("ROCKET", firstRocketBuilt)
+        
         randomLocation = bc.MapLocation(bc.Planet.Earth, 0, 0)
 
         #astar(firstMan, randomLocation)
