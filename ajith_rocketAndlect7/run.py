@@ -377,6 +377,15 @@ while True:
         #possibly useless piece of code begins
              #possibly useless piece of code ends
               if unit.unit_type == bc.UnitType.Rocket:
+                if not first_rocket:
+                  for q in directions:
+                    if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
+                      gc.blueprint(unit.id,bc.UnitType.Rocket,q)
+                      print("ROCKET BLUEPRINTED YAH")
+                      rocketLocation = gc.unit(unit.id).location.map_location().add(q)
+                      #whereTo[0, gc.planet()] = rocketLocation, 1, 1
+                      first_rocket = True
+                      break
                 if gc.planet() == bc.Planet.Earth:
                   garrison == unit.structure_garrison()
                   countNeeded = 8
@@ -408,7 +417,7 @@ while True:
                             gc.unload(unit.id, d)
                             factory_move(gc.unit(unit.id))
                     
-              if unit.unit_type == bc.UnitType.Factory:
+              '''if unit.unit_type == bc.UnitType.Factory:
 
                   garrison = unit.structure_garrison()
 
@@ -428,17 +437,9 @@ while True:
                         break
                   if touchedMars: #touchedMars = true
                     robotProportions = getRobotProportions(round)
-                    #build general robots here
+                    #build general robots here'''
               if unit.unit_type == bc.UnitType.Rocket:
-                if not first_rocket:
-                  for q in directions:
-                    if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
-                      gc.blueprint(unit.id,bc.UnitType.Rocket,q)
-                      print("ROCKET BLUEPRINTED YAH")
-                      rocketLocation = gc.unit(unit.id).location.map_location().add(q)
-                      #whereTo[0, gc.planet()] = rocketLocation, 1, 1
-                      first_rocket = True
-                      break
+                
               location = unit.location
               if location.is_on_map():
                   nearby = gc.sense_nearby_units(location.map_location(), 4)
