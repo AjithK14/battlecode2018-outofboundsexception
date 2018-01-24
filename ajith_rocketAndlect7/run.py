@@ -181,6 +181,10 @@ def harvestKarbonite(unit, currentLocation):
   if max > 0:
     gc.harvest(unit.id, maxDir)
 
+def onEarth(loc):
+  if (loc.x<0) or (loc.y<0) or (loc.x>=earthMap.width) or (loc.y>=earthMap.height): return False
+  return True
+
 def checkK(loc):
   if not onEarth(loc): return 0
   return gc.karbonite_at(loc)
