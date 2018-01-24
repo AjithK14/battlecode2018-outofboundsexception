@@ -362,10 +362,11 @@ while True:
                          INITIALKHGARRAY[3] - currentRobotArray[3],
                          INITIALKHGARRAY[4] - currentRobotArray[4]]
                     if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
-                    if len(earthRocketLocations) > 0:
+                        
+                        if len(earthRocketLocations) > 0:
 
-                        for i in range(len(robots)):
-                          whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
+                            for i in range(len(robots)):
+                                whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
                         
                     '''else: #we're probably not building a base rn
                       for i in range(len(robots)):
