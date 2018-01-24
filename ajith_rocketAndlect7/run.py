@@ -181,22 +181,32 @@ def astar(unit, dest):
     if not unit.movement_heat() < maxRobotMovementHeat:
         return
     currentLocation = unit.location.map_location()
-    if unit.unit_type == robots[0]: #robots[0] is worker
+    if currentLocation.is_adjacent_to(prev) == True:
+      return
+    if unit.unit_type == robots[0] and gc.karbonite() < optimalKarboniteAmount: #robots[0] is worker
+      #print (gc.karbonite())
       harvestKarbonite(unit, currentLocation)
     if currentLocation.direction_to(dest) == bc.Direction.Center:
-      my_dict.pop(unit.id, str(dest), None)
+      pathDict.pop(unit.id, str(dest))
+      return
     if (unit.id, str(dest)) in pathDict: #the program has saved where this thing has been trying to go
         path = pathDict[unit.id, str(dest)]
+        prev = path[0].mapLocation
+        if currentLocation.is_adjacent_to(prev) == False: #had used bugnav recently and not completely finished
+          print (str(currentLocation) + " p:" + str(prev))
+          go_to(unit, prev)
+          return
         prev = path.popleft().mapLocation
         if len(path) == 0:
             pathDict[unit.id, str(dest)] = None
         d = currentLocation.direction_to(prev)
         if gc.can_move(unit.id, d):
-            #print ("sice me")
+            print ("sice me")
             gc.move_robot(unit.id, d)
-        else: #at this point, there is clearly an obstable, such as a factory in the way.  Recurring a* here to try to continue a*
-            newDest = path.popleft().mapLocation
-            astar(unit, newDest)
+            #path.popleft()
+        else: #at this point, there is clearly an obstable, such as a factory in the way.  Calling bugnav
+            newDest = path[0].mapLocation
+            go_to(unit, newDest)
     else: #the first time this program is trying to make the unit get to this destination
         startState = Node(None, currentLocation, 0, dest, unit)
         prev = set()
@@ -213,6 +223,7 @@ def astar(unit, dest):
                     path.append(node)
                     node = node.parent
                 path.reverse() #because it's in reverse order
+                path.popleft()
                 pathDict[unit.id, str(dest)] = path
                 astar(unit, dest)
             else:
@@ -366,6 +377,7 @@ while True:
         #astar(firstMan, randomLocation)
     # frequent try/catches are a good idea
     try:
+          '''
           dmap = mmap(w,h)
           for unit in gc.units():
             if not unit.location.is_in_garrison():
@@ -373,6 +385,7 @@ while True:
               if unit.team!=my_team:
 
                 dmap.addDisk(unit.location.map_location(),50,1)
+          '''
           numWorkers = 0
           blueprintLocation = None
           blueprintWaiting = False
@@ -388,8 +401,7 @@ while True:
 
             location = unit.location
             if location.is_on_map():
-              
-
+            
                 nearby = gc.sense_nearby_units(location.map_location(), 4)
                 if unit.unit_type == bc.UnitType.Worker:
                   d = random.choice(directions)
@@ -416,7 +428,7 @@ while True:
                       ml = unit.location.map_location()
                       bdist = ml.distance_squared_to(blueprintLocation)
                       if bdist>2:
-                        fuzzygoto(unit,blueprintLocation)
+                        astar(unit,blueprintLocation)
                         continue
                   #harvest karbonite from nearby
                   mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
@@ -432,7 +444,7 @@ while True:
                         if kAmt==0:
                           kLocs.pop(0)
                         else:
-                          fuzzygoto(unit,dest)
+                          astar(unit,dest)
                 
                 if unit.unit_type == bc.UnitType.Factory:
 
@@ -458,7 +470,7 @@ while True:
                         destination=nearbyEnemies[0].location.map_location()
                       else:
                         destination=enemyStart
-                      fuzzygoto(unit,destination)
+                      astar(unit,destination)
 
                 '''
                  possibly useless piece of code begins
