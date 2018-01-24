@@ -387,6 +387,7 @@ while True:
           for unit in gc.my_units():
              #possibly useless piece of code begins
              #possibly useless piece of code ends
+             '''
               if unit.unit_type == bc.UnitType.Worker:
                 if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
                   for q in directions:
@@ -428,7 +429,7 @@ while True:
                             print ("unloaded")
                             gc.unload(unit.id, d)
                             factory_move(gc.unit(unit.id))
-                    
+                    '''
               '''if unit.unit_type == bc.UnitType.Factory:
 
                   garrison = unit.structure_garrison()
