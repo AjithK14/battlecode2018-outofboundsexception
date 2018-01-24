@@ -429,7 +429,7 @@ while True:
                   if touchedMars: #touchedMars = true
                     robotProportions = getRobotProportions(round)
                     #build general robots here
-              if unit.unit_type == robots[0]:
+              if unit.unit_type == bc.UnitType.Rocket:
                 if not first_rocket:
                   for q in directions:
                     if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
