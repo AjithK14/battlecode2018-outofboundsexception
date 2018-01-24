@@ -303,7 +303,7 @@ while True:
                 gc.blueprint(unit.id,bc.UnitType.Rocket,q)
                 print("ROCKET BLUEPRINTED YAH")
                 rocketLocation = gc.unit(unit.id).location.map_location().add(q)
-                whereTo[0, gc.planet()] = rocketLocation, 1, 1
+                #whereTo[0, gc.planet()] = rocketLocation, 1, 1
                 first_rocket = True
                 break
 
@@ -358,7 +358,8 @@ while True:
                       if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
                         if len(earthRocketLocations > 0):
                           for i in range(len(robots)):
-                            whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
+                            superUnnecesVar = 0
+                            #whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
                           
                       '''else: #we're probably not building a base rn
                         for i in range(len(robots)):
