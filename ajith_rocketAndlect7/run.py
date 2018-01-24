@@ -546,7 +546,7 @@ while True:
                 if unit.unit_type == bc.UnitType.Ranger:
                   if not unit.location.is_in_garrison():#can't move from inside a factory
                     attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
-                    if len(attackableEnemies)>0:
+                    if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
                       if gc.is_attack_ready(unit.id):
                         gc.attack(unit.id, attackableEnemies[0].id)
                     elif gc.is_move_ready(unit.id):
