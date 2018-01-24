@@ -474,7 +474,7 @@ while True:
                         continue
                     #head toward blueprint location
                     if gc.is_move_ready(unit.id):
-                      if first_rocket:
+                      if blueprintWaiting:
                         ml = unit.location.map_location()
                         bdist = ml.distance_squared_to(blueprintLocation)
                         if bdist>2:
