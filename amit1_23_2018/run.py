@@ -268,6 +268,7 @@ earthHealers = 0
 whereTo = dict() #key is type of robot number [0 to 4], planet.  Value is maplocation, errorRadius, number
 first_rocket = False
 firstRocketBuilt = False
+firstRocketLaunched=False
 
 def getRobotProportions(round):
   return KHGARRAY #will change the proportions so that it is a fnction of round
@@ -295,7 +296,18 @@ while True:
          #possibly useless piece of code ends
 
         for unit in gc.my_units():
-
+          if unit.unit_type == bc.UnitType.Rocket:
+            if gc.planet() == bc.Planet.Earth:
+              garrison == unit.structure_garrison()
+              countNeeded = 8
+              if len(garrison) >= countNeeded and len(garrison) <= 8:
+                tempPlanetMap = gc.planet_map(bc.Planet.Mars)
+                tempLoc = MapLocation(bc.Planet.Mars, (int)(
+                    Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
+                if gc.can_launch_rocket(unit.id, tempLoc):
+                  gc.launch_rocket(unit.id, tempLoc)
+                  firstRocketLaunched=True
+                  #vrgn = False
           if unit.unit_type == bc.UnitType.Factory:
              garrison = unit.structure_garrison()
 
