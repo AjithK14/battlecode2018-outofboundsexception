@@ -357,7 +357,7 @@ while True:
                            INITIALKHGARRAY[4] - currentRobotArray[4]]
 
                       if max(deficit) <= 1: #start calling the players to the first rocket location, modify this condition if necessary
-                        if len(earthRocketLocations > 0):
+                        if len(earthRocketLocations) > 0:
                           for i in range(len(robots)):
                             superUnnecesVar = 0
                             #whereTo[i, bc.Planet.Earth] = earthRocketLocations[0], 1, KHGARRAY[i]
