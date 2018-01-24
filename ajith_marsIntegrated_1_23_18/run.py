@@ -374,7 +374,7 @@ while True:
                           for i in range(len(robots)):
                             whereTo[i, bc.Planet.Earth] = baseLocations[0].x, baseLocations[0].y, 2, KHGARRAY[i]'''
                         for i in range(len(deficit)):
-                            robotType = deficit.index(max(deficit))
+                            robotType = robot[deficit.index(max(deficit))]
                             if gc.can_produce_robot(unit.id, robotType):
                                 gc.produce_robot(unit.id, robotType)
                                 print('produced a robot!')
