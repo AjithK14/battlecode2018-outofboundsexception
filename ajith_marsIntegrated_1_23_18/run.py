@@ -347,15 +347,15 @@ while True:
                   if touchedMars == False:
                     currentRobotArray = [0, 0, 0, 0, 0]
                     for unit in gc.my_units():
-                        if unit.unit_type == gc.UnitType.Worker:
+                        if unit.unit_type == bc.UnitType.Worker:
                           currentRobotArray[0] += 1
-                        elif unit.unit_type == gc.UnitType.Knight:
+                        elif unit.unit_type == bc.UnitType.Knight:
                             currentRobotArray[1] += 1
-                        elif unit.unit_type == gc.UnitType.Rangers:
+                        elif unit.unit_type == bc.UnitType.Rangers:
                             currentRobotArray[2] += 1 
-                        elif unit.unit_type == gc.UnitType.Mage:
+                        elif unit.unit_type == bc.UnitType.Mage:
                             currentRobotArray[3] += 1
-                        elif unit.unit_type == gc.UnitType.Healer:
+                        elif unit.unit_type == bc.UnitType.Healer:
                             currentRobotArray[4] += 1
 
                         deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
