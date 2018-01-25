@@ -445,13 +445,16 @@ while True:
                         gc.launch_rocket(unit.id, tempLoc)
                         vrgn = False
                   else:
-                      garrison == unit.structure_garrison()
-                      if len(garrison) > 0:
-                        d = random.choice(directions)  # good for now, change later
-                        if gc.can_unload(unit.id, d):
-                          print ("unloaded")
-                          gc.unload(unit.id, d)
-                          continue
+                      garrison = unit.structure_garrison();
+                      unloadedUnits = 0; prevUnloadedUnits=-1
+                      while len(garrison) > 0 and unloadedUnits != prevUnloadedUnits:
+                        prevUnloadedUnits=unloadedUnits
+                        for d in directions: # good for now, change later
+                          if gc.can_unload(unit.id, d):
+                            print ("unloaded")
+                            unloadedUnits+=1
+                            gc.unload(unit.id, d)
+                            continue
                       
                 if unit.unit_type == bc.UnitType.Worker:
                   print("work")
