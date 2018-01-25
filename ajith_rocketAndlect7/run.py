@@ -438,8 +438,8 @@ while True:
                       countNeeded = 1
                     if len(garrison) >= countNeeded and len(garrison) <= 8:
                       tempPlanetMap = gc.starting_map(bc.Planet.Mars)
-                      tempLoc = MapLocation(bc.Planet.Mars, (int)(
-                          Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
+                      tempLoc = bc.MapLocation(bc.Planet.Mars, (int)(
+                          tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4))
                       if gc.can_launch_rocket(unit.id, tempLoc):
                         print("ROCKET LAUNCHED!!!!!!!!")
                         gc.launch_rocket(unit.id, tempLoc)
@@ -480,7 +480,7 @@ while True:
                       gc.blueprint(unit.id, bc.UnitType.Factory, d)
 
                       continue
-                  adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 2)
+                  adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1)
                   for adjacent in adjacentUnits:#build
                     if gc.can_build(unit.id,adjacent.id):
                       gc.build(unit.id,adjacent.id)
