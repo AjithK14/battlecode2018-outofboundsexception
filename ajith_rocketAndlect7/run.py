@@ -446,6 +446,7 @@ while True:
                         vrgn = False
                   else:
                       garrison = unit.structure_garrison();
+                      print("LANDED AND UNLOADING")
                       unloadedUnits = 0; prevUnloadedUnits=-1
                       while len(garrison) > 0 and unloadedUnits != prevUnloadedUnits:
                         prevUnloadedUnits=unloadedUnits
