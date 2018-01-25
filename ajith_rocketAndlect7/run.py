@@ -542,7 +542,8 @@ while True:
                         destination=nearbyEnemies[0].location.map_location()
                       else:
                         destination=enemyStart
-                      fuzzygoto(unit,destination)
+                      if destination != None:
+                        fuzzygoto(unit,destination)
 
                 
                  #possibly useless piece of code begins
