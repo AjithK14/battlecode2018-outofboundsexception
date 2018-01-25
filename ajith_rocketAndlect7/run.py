@@ -545,7 +545,13 @@ while True:
                         destination=nearbyEnemies[0].location.map_location()
                         fuzzygoto(unit,destination)
                       else:
-                        destination=enemyStart
+                        if unit.location.is_on_planet(bc.Planet.Earth):
+                          destination=enemyStart
+                        else:
+                          for d in directions:
+                            if gc.can_move(unit.id,d):
+                              gc.move_robot(unit.id,d)
+                              break
                       
 
                 
