@@ -423,8 +423,9 @@ while True:
           
             location = unit.location
             if location.is_on_map():
-            
+                
                 if unit.unit_type == bc.UnitType.Rocket:
+                  print("ROCKET")
                   if unit.location.is_on_planet(bc.Planet.Earth):
                     nearby = gc.sense_nearby_units(location.map_location(), 1)
                     for other in nearby:
@@ -453,6 +454,7 @@ while True:
                           continue
                       
                 if unit.unit_type == bc.UnitType.Worker:
+                  print("work")
                   if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
                     for q in directions:
                       if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
@@ -463,6 +465,7 @@ while True:
                         first_rocket = True
                         break
                 if unit.unit_type == bc.UnitType.Worker:
+                  print(unit.unit_type)
                   d = random.choice(directions)
                   if numWorkers<10:
                     replicated=False
@@ -509,7 +512,7 @@ while True:
                           fuzzygoto(unit,dest)
                 
                 if unit.unit_type == bc.UnitType.Factory:
-
+                  print(unit.unit_type)
                   garrison = unit.structure_garrison()
                   if len(garrison) > 0:#ungarrison
                     d = random.choice(directions)
@@ -521,6 +524,7 @@ while True:
                     continue
                 
                 if unit.unit_type == bc.UnitType.Ranger:
+                  print(unit.unit_type)
                   if not unit.location.is_in_garrison():#can't move from inside a factory
                     attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
                     if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
