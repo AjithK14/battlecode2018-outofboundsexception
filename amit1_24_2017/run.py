@@ -19,6 +19,13 @@ gc = bc.GameController()
 
 robots = [bc.UnitType.Worker, bc.UnitType.Knight, bc.UnitType.Ranger, bc.UnitType.Mage, bc.UnitType.Healer]
 
+## IDs
+workerNum = 0
+knightNum = 1
+rangerNum = 2
+mageNum = 3
+healerNum = 4
+
 earthMap = gc.starting_map(bc.Planet.Earth)
 marsMap = None
 start = None
@@ -91,7 +98,8 @@ while(len(currentLocs)>0):
         if kMap.get(newPlace)>0:
           kLocs.append(loc)
   currentLocs=nextLocs
-def factory_move(robot_id): #move robot away from factory -- this method takes the robot id
+
+def factory_move(unit): #move robot away from factory -- this method takes the robot itself
   for i in directions:
     if gc.can_move(robot_id,i):
       gc.move_robot(robot_id,i)
@@ -168,23 +176,32 @@ def notBanned(mapLocation, round):
             return False
     return True
 
-def harvestKarbonite(unit, currentLocation):
-  amount = gc.karbonite_at(currentLocation)
-  max = 0
-  maxDir = None
-  if amount > workerHarvestAmount:
-    if gc.can_harvest(unit.id, Direction.Center):
-      gc.harvest(unit.id, Direction.Center)
-  for direction in directions:
-    newLoc = currentLocation.add(direction)
-    if earthMap.on_map(newLoc):
-      cur = gc.karbonite_at(newLoc)
-      if cur > max:
-        max = cur
-        maxDir = direction
-
-  if max > 0:
-    gc.harvest(unit.id, maxDir)
+def harvestKarbonite(unit):
+  mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
+  if mostK>0:#found some karbonite to harvest
+    if gc.can_harvest(unit.id,bestDir):
+      gc.harvest(unit.id,bestDir)
+      return
+  elif gc.is_move_ready(unit.id):#need to go looking for karbonite
+    if len(kLocs)>0:
+      dest=kLocs[0]
+      if gc.can_sense_location(dest):
+        kAmt = gc.karbonite_at(dest)
+        if kAmt==0:
+          kLocs.pop(0)
+        else:
+          fuzzygoto(unit,dest)
+def closedIn(unit):
+  counter = 0
+  curLoc = unit.location.map_location()
+  for d in directions:
+    newLoc = curLoc.add(d)
+    if gc.is_occupiable(newLoc):
+      counter += 1
+  if counter > 1:
+    return True
+  else:
+    return False
 
 def onEarth(loc):
   if (loc.x<0) or (loc.y<0) or (loc.x>=earthMap.width) or (loc.y>=earthMap.height): return False
@@ -200,9 +217,6 @@ def astar(unit, dest):
     currentLocation = unit.location.map_location()
     if currentLocation.is_adjacent_to(prev) == True:
       return
-    if unit.unit_type == robots[0] and gc.karbonite() < optimalKarboniteAmount: #robots[0] is worker
-      #print (gc.karbonite())
-      harvestKarbonite(unit, currentLocation)
     if currentLocation.direction_to(dest) == bc.Direction.Center:
       pathDict.pop(unit.id, str(dest))
       return
@@ -375,9 +389,195 @@ whereTo = dict() #key is type of robot number [0 to 4], planet.  Value is maploc
 first_rocket = False
 firstRocketBuilt = False
 firstRocketLaunched=False
+blueprintLocation = None
+blueprintWaiting = False
 
 def getRobotProportions(round):
   return KHGARRAY #will change the proportions so that it is a fnction of round
+
+def factoryProtocol(unit):
+  if unit.unit_type == bc.UnitType.Factory:
+    if not unit.structure_is_built():
+      ml = unit.location.map_location()
+      earthBlueprintLocations.append(ml)
+      whereTo[workerNum, gc.planet()] = mapLocation, 1, 1
+      return
+    garrison = unit.structure_garrison()
+
+    while len(garrison) > 0:
+      d = random.choice(directions)  # good for now, change later
+      if gc.can_unload(unit.id, d):
+        print ("unloaded")
+        gc.unload(unit.id, d)
+      else:
+        for tilt in tryRotate:
+          newD = rotate(d, tilt)
+          while gc.can_unload(unit.id, d):
+            print ("unloaded")
+            gc.unload(unit.id, d)
+          break
+    if touchedMars == False:
+      currentRobotArray = [0, 0, 0, 0, 0]
+      for unit in gc.my_units():
+          if unit.unit_type == bc.UnitType.Worker:
+            currentRobotArray[0] += 1
+          elif unit.unit_type == bc.UnitType.Knight:
+              currentRobotArray[1] += 1
+          elif unit.unit_type == bc.UnitType.Ranger:
+              currentRobotArray[2] += 1 
+          elif unit.unit_type == bc.UnitType.Mage:
+              currentRobotArray[3] += 1
+          elif unit.unit_type == bc.UnitType.Healer:
+              currentRobotArray[4] += 1
+
+          deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+               INITIALKHGARRAY[1] - currentRobotArray[1],
+               INITIALKHGARRAY[2] - currentRobotArray[2],
+               INITIALKHGARRAY[3] - currentRobotArray[3],
+               INITIALKHGARRAY[4] - currentRobotArray[4]]
+            
+      for i in range(len(deficit)):
+          robotType = deficit.index(max(deficit))
+          if gc.can_produce_robot(unit.id, robots[robotType]):
+              gc.produce_robot(unit.id, robots[robotType])
+              print('produced a robot!')
+              continue
+
+    else: #touchedMars = true
+      robotProportions = getRobotProportions(round)
+      # build general robots here
+      if gc.can_produce_robot(unit.id, bc.UnitType.Ranger):#produce Rangers
+        gc.produce_robot(unit.id, bc.UnitType.Ranger)
+        
+
+def rocketProtocol(unit):
+  if unit.unit_type == bc.UnitType.Rocket:
+    if not unit.structure_is_built():
+      ml = unit.location.map_location()
+      earthBlueprintLocations.append(ml)
+      blueprintWaiting = True
+      whereTo[workerNum, gc.planet()] = mapLocation, 1, 1
+      return
+    if gc.planet() == bc.Planet.Earth:
+      garrison == unit.structure_garrison()
+      countNeeded = 8
+      if vrgn == False:
+        countNeeded = 6
+      if len(garrison) >= countNeeded and len(garrison) <= maxRocketGarrison:
+        tempPlanetMap = gc.planet_map(bc.Planet.Mars)
+        tempLoc = MapLocation(bc.Planet.Mars, (int)(
+            Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
+        if gc.can_launch_rocket(unit.id, tempLoc):
+          gc.launch_rocket(unit.id, tempLoc)
+          vrgn = False
+          print ("Rocket Launched!!!")
+        else:
+          print ("Rocket failed to launch")
+    else:
+      garrison = unit.structure_garrison();
+      print(garrison)
+      print("LANDED AND UNLOADING")
+      touchedMars = True
+      unloadedUnits = 0; prevUnloadedUnits=-1
+      while len(garrison) > 0 and unloadedUnits != prevUnloadedUnits:
+        prevUnloadedUnits=unloadedUnits
+        for d in directions: # good for now, change later
+          if gc.can_unload(unit.id, d):
+            print ("unloaded")
+            unloadedUnits+=1
+            gc.unload(unit.id, d)
+            continue
+
+def workerProtocol(unit, numWorkers):
+  if unit.unit_type == bc.UnitType.Worker:
+    harvestKarbonite(unit) #cuz workers need to harvest karbonite before they do anything else
+    replicated = False
+    d = random.choice(directions)
+    if numWorkers<10:
+      replicated=False
+      for d in directions:
+        if gc.can_replicate(unit.id,d):
+          gc.replicate(unit.id,d)
+          replicated=True
+          break
+    else:
+      if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
+        for q in directions:
+          if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
+            gc.blueprint(unit.id,bc.UnitType.Rocket,q)
+            print("ROCKET BLUEPRINTED YAH")
+            earthBlueprintLocations.append(unit.location.map_location().add(q))
+            first_rocket = True
+            break
+      adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1)
+      for adjacent in adjacentUnits:#build
+        if gc.can_build(unit.id,adjacent.id):
+          gc.build(unit.id,adjacent.id)
+          if adjacent.id == bc.UnitType.Rocket:
+            print("ROCKET BUILT!")
+          elif adjacent.id == bc.UnitType.Factory:
+            print ("FACTORY BUILT!")
+          #head toward blueprint location
+
+      attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
+      if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
+        if gc.is_attack_ready(unit.id):
+          gc.attack(unit.id, attackableEnemies[0].id)
+
+      if gc.is_move_ready(unit.id):
+        for blueprint in earthBlueprintLocations: #this system handles multiple blueprints
+          bdist = ml.distance_squared_to(blueprintLocation)
+          if bdist>5: #increased from 2, change to a constant
+            fuzzygoto(unit, blueprintLocation)
+            return #can't do anything else at this point
+
+        if gc.is_move_ready(unit.id):#need to go looking for karbonite
+          if len(kLocs)>0:
+            dest=kLocs[0]
+            if gc.can_sense_location(dest):
+              kAmt = gc.karbonite_at(dest)
+              if kAmt==0:
+                kLocs.pop(0)
+              else:
+                fuzzygoto(unit,dest)
+
+
+def rangerProtocol(unit):
+  if unit.unit_type == bc.UnitType.Ranger:
+    #print(unit.unit_type)
+    if not unit.location.is_in_garrison():#can't move from inside a factory
+      attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
+      if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
+        if gc.is_attack_ready(unit.id):
+          gc.attack(unit.id, attackableEnemies[0].id)
+      elif gc.is_move_ready(unit.id):
+        nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
+        if len(nearbyEnemies)>0:
+          destination=nearbyEnemies[0].location.map_location()
+        else:
+          destination=enemyStart
+        if destination is not None:
+          fuzzygoto(unit,destination)
+
+def clearRoom(unit):
+  currentLocation = unit.location.map_location()
+  adjacentUnits = gc.sense_nearby_units(currentLocation, 1)
+  for adjacent in adjacentUnits:#sensing if there is a factory or rocket nearby
+    if adjacent.unit_type == bc.UnitType.Rocket: #gtfo, you don't want to be near a rocket
+      adjLoc = adjacent.location.map_location()
+      towardRocket = currentLocation.direction_to(adjLoc)
+      awayFromRocket = rotate(towardRocket, 4) #4 means 180 degrees
+      fuzzygoto(awayFromRocket, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
+
+  myTeamAdjacentUnits = gc.sense_nearby_units_by_team(currentLocation, 1, my_team)
+  for madjacent in myTeamAdjacentUnits:
+    if madjacent.unit_type == bc.UnitType.Factory: #if it's one of my own factories, I don't want to be blocking it.
+      if closedIn(madjacent) == True:
+        adjLoc = adjacent.location.map_location()
+        towardRocket = currentLocation.direction_to(adjLoc)
+        awayFromRocket = rotate(towardRocket, 4) #4 means 180 degrees
+        fuzzygoto(awayFromRocket, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
+
 
 if gc.planet() == bc.Planet.Earth:
   w=earthMap.width
@@ -386,7 +586,8 @@ else:
   marsMap=gc.starting_map(bc.Planet.Mars)
   w=marsMap.width
   h=marsMap.height
-  
+
+first_rocket = False
 while True:
     # We only support Python 3, which means brackets around print()
     round = gc.round()
@@ -404,87 +605,33 @@ while True:
                 dmap.addDisk(unit.location.map_location(),50,1)
           
           numWorkers = 0
-          blueprintLocation = None
-          blueprintWaiting = False
+
           for unit in gc.my_units():
-            if unit.unit_type== bc.UnitType.Factory:
-              if not unit.structure_is_built():
-                ml = unit.location.map_location()
-                earthBlueprintLocations.append(ml)
-                blueprintWaiting = True
-                whereTo[0, gc.planet()] =  
             if unit.unit_type== bc.UnitType.Worker:
               numWorkers+=1
+
           for unit in gc.my_units():
+
+            clearRoom(unit)
+
+            factoryProtocol(unit)
+
+            rocketProtocol(unit)
+
+            workerProtocol(unit, numWorkers)
+
+            rangerProtocol(unit)
+
+
 
             location = unit.location
             if location.is_on_map():
-            
+                
                 nearby = gc.sense_nearby_units(location.map_location(), 4)
-                if unit.unit_type == bc.UnitType.Rocket:
-                  if unit.location.is_on_planet(bc.Planet.Earth):
-                    garrison == unit.structure_garrison()
-                    countNeeded = 8
-                    if vrgn == False:
-                      countNeeded = 6
-                    if len(garrison) >= countNeeded and len(garrison) <= 8:
-                      tempPlanetMap = gc.planet_map(bc.Planet.Mars)
-                      tempLoc = MapLocation(bc.Planet.Mars, (int)(
-                          Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
-                      if gc.can_launch_rocket(unit.id, tempLoc):
-                        print("ROCKET LAUNCHED!!!!!!!!")
-                        gc.launch_rocket(unit.id, tempLoc)
-                        vrgn = False
-                      else:
-                        print ("fuck I can't launch")
-                  else:
-                      garrison == unit.structure_garrison()
-                      if len(garrison) > 0:
-                        d = random.choice(directions)  # good for now, change later
-                        if gc.can_unload(unit.id, d):
-
-                          print ("unloaded")
-                          gc.unload(unit.id, d)
-                          continue
-                        else:
-                          for tilt in tryRotate:
-
-                            newD = rotate(d, tilt)
-                            while gc.can_unload(unit.id, d):
-                              print ("unloaded")
-                              gc.unload(unit.id, d)
-                              factory_move(unit.id)
                       
-                if unit.unit_type == bc.UnitType.Factory:
 
-                    garrison = unit.structure_garrison()
 
-                    if len(garrison) > 0:
-                      d = random.choice(directions) #good for now, change later
-                      if gc.can_unload(unit.id, d):
-                        print ("unloaded")
-                        gc.unload(unit.id, d)
-                        continue
-                      else:
-                        for tilt in tryRotate:
-                          newD = rotate(d, tilt)
-                          while gc.can_unload(unit.id, d):
-                            print ("unloaded")
-                            gc.unload(unit.id, d)
-                            factory_move(gc.unit(unit.id))
-                          break
-                    if touchedMars: #touchedMars = true
-                      robotProportions = getRobotProportions(round)
-                if unit.unit_type == bc.UnitType.Worker:
-                  if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
-                    for q in directions:
-                      if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
-                        gc.blueprint(unit.id,bc.UnitType.Rocket,q)
-                        print("ROCKET BLUEPRINTED YAH")
-                        rocketLocation = gc.unit(unit.id).location.map_location().add(q)
-                        #whereTo[0, gc.planet()] = rocketLocation, 1, 1
-                        first_rocket = True
-                        break
+                  
                 if unit.unit_type == bc.UnitType.Worker:
                   d = random.choice(directions)
                   if numWorkers<10:
@@ -513,7 +660,8 @@ while True:
                         fuzzygoto(unit,blueprintLocation)
                         continue
                   #harvest karbonite from nearby
-                  mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
+
+                  '''mostK, bestDir = bestKarboniteDirection(unit.location.map_location())
                   if mostK>0:#found some karbonite to harvest
                     if gc.can_harvest(unit.id,bestDir):
                       gc.harvest(unit.id,bestDir)
@@ -527,6 +675,7 @@ while True:
                           kLocs.pop(0)
                         else:
                           fuzzygoto(unit,dest)
+                  put it in the workerProtocol, first thing because you have to harvest karbonite first, then move'''
                 
                 if unit.unit_type == bc.UnitType.Factory:
 
@@ -536,23 +685,10 @@ while True:
                     if gc.can_unload(unit.id, d):
                       gc.unload(unit.id, d)
                       continue
-                  elif gc.can_produce_robot(unit.id, bc.UnitType.Ranger):#produce Mages
+                  elif gc.can_produce_robot(unit.id, bc.UnitType.Ranger):#produce Rangers
                     gc.produce_robot(unit.id, bc.UnitType.Ranger)
                     continue
                 
-                if unit.unit_type == bc.UnitType.Ranger:
-                  if not unit.location.is_in_garrison():#can't move from inside a factory
-                    attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
-                    if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
-                      if gc.is_attack_ready(unit.id):
-                        gc.attack(unit.id, attackableEnemies[0].id)
-                    elif gc.is_move_ready(unit.id):
-                      nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
-                      if len(nearbyEnemies)>0:
-                        destination=nearbyEnemies[0].location.map_location()
-                      else:
-                        destination=enemyStart
-                      fuzzygoto(unit,destination)
 
                 
                  #possibly useless piece of code begins
