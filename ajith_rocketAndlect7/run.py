@@ -436,7 +436,7 @@ while True:
                     if vrgn == False:
                       countNeeded = 1
                     if len(garrison) >= countNeeded and len(garrison) <= 8:
-                      tempPlanetMap = gc.planet_map(bc.Planet.Mars)
+                      tempPlanetMap = gc.starting_map(bc.Planet.Mars)
                       tempLoc = MapLocation(bc.Planet.Mars, (int)(
                           Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
                       if gc.can_launch_rocket(unit.id, tempLoc):
