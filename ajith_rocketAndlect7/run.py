@@ -467,7 +467,7 @@ while True:
                   if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
                     for q in directions:
                       if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
-                        gc.blueprint(unit.id,bc.UnitType.ROCKETocket,q)
+                        gc.blueprint(unit.id,bc.UnitType.Rocket,q)
                         print("ROCKET BLUEPRINTED YAH")
                         rocketLocation = gc.unit(unit.id).location.map_location().add(q)
                         #whereTo[0, gc.planet()] = rocketLocation, 1, 1
