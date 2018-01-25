@@ -424,10 +424,9 @@ while True:
             location = unit.location
             if location.is_on_map():
             
-                nearby = gc.sense_nearby_units(location.map_location(), 4)
                 if unit.unit_type == bc.UnitType.Rocket:
                   if unit.location.is_on_planet(bc.Planet.Earth):
-                    nearby = gc.sense_nearby_units(location.map_location(), 4)
+                    nearby = gc.sense_nearby_units(location.map_location(), 1)
                     for other in nearby:
                       if gc.can_load(other.id,unit.id):
                         gc.load(other.id,unit.id)
