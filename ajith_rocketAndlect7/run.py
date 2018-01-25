@@ -480,7 +480,7 @@ while True:
                     replicated=False
                     for d in directions:
                       if gc.can_replicate(unit.id,d):
-                        gc.replicate(unit.id,d)
+                        gc.replicate(unit.id,d);numWorkers+=1
                         replicated=True
                         break
                     if replicated:continue
