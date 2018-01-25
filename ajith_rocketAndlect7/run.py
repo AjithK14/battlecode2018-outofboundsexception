@@ -479,8 +479,10 @@ while True:
                   if numWorkers<10:
                     replicated=False
                     for d in directions:
-                      if gc.can_replicate(unit.id,d):
+                      if gc.can_replicate(unit.id,d) and numWorkers < 10:
+                        #print(numWorkers)
                         gc.replicate(unit.id,d);numWorkers+=1
+                        #print(numWorkers)
                         replicated=True
                         break
                     if replicated:continue
