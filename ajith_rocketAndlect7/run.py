@@ -428,6 +428,7 @@ while True:
                   #print("ROCKET")
                   if unit.location.is_on_planet(bc.Planet.Earth):
                     nearby = gc.sense_nearby_units(location.map_location(), 1)
+                    print("nearby units to the rocket", nearby)
                     for other in nearby:
                       if gc.can_load(other.id,unit.id):
                         gc.load(other.id,unit.id)
