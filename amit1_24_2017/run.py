@@ -559,22 +559,22 @@ def workerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
           gc.blueprint(unit.id, bc.UnitType.Factory, d)
 
       #head toward blueprint locations
-      if unit.movement_heat < maxRobotMovementHeat: 
+      if unit.movement_heat() < maxRobotMovementHeat: 
         for blueprintLocation in earthBlueprintLocations: #this system handles multiple blueprints, going to the first one
           ml = unit.location.map_location()
           bdist = ml.distance_squared_to(blueprintLocation)
           if bdist>5: #increased from 2, change to a constant
             fuzzygoto(unit, blueprintLocation)
+            return #can't do anything else at this point
 
-
-        if len(kLocs)>0: #need to go looking for karbonite
-          dest=kLocs[0]
-          if gc.can_sense_location(dest):
-            kAmt = gc.karbonite_at(dest)
-            if kAmt==0:
-              kLocs.pop(0)
-            else:
-              fuzzygoto(unit,dest)
+      if len(kLocs)>0 and unit.movement_heat() < maxRobotMovementHeat: #need to go looking for karbonite
+        dest=kLocs[0]
+        if gc.can_sense_location(dest):
+          kAmt = gc.karbonite_at(dest)
+          if kAmt==0:
+            kLocs.pop(0)
+          else:
+            fuzzygoto(unit,dest)
 
 
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
