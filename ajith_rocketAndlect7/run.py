@@ -547,6 +547,7 @@ while True:
                       else:
                         if unit.location.is_on_planet(bc.Planet.Earth):
                           destination=enemyStart
+                          fuzzygoto(unit,destination)
                         else:
                           for d in directions:
                             if gc.can_move(unit.id,d):
