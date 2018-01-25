@@ -373,6 +373,7 @@ whereTo = dict() #key is type of robot number [0 to 4], planet.  Value is maploc
 first_rocket = False
 firstRocketBuilt = False
 firstRocketLaunched=False
+firstRocketLanded = False
 
 def getRobotProportions(round):
   return KHGARRAY #will change the proportions so that it is a fnction of round
@@ -447,8 +448,10 @@ while True:
                         vrgn = False
                   else:
                       garrison = unit.structure_garrison();
-                      print(garrison)
-                      print("LANDED AND UNLOADING")
+                      if not firstRocketLanded:
+                        print(garrison)
+                        print("LANDED!")
+                        firstRocketLanded=True
                       unloadedUnits = 0; prevUnloadedUnits=-1
                       while len(garrison) > 0 and unloadedUnits != prevUnloadedUnits:
                         prevUnloadedUnits=unloadedUnits
@@ -540,10 +543,10 @@ while True:
                       nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
                       if len(nearbyEnemies)>0:
                         destination=nearbyEnemies[0].location.map_location()
+                        fuzzygoto(unit,destination)
                       else:
                         destination=enemyStart
-                      if destination != None:
-                        fuzzygoto(unit,destination)
+                      
 
                 
                  #possibly useless piece of code begins
