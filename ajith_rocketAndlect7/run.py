@@ -420,18 +420,21 @@ while True:
                 blueprintWaiting = True
             if unit.unit_type== bc.UnitType.Worker:
               numWorkers+=1
-          for unit in gc.my_units():
-
+          
             location = unit.location
             if location.is_on_map():
             
-                nearby = gc.sense_nearby_units(location.map_location(), 4)
                 if unit.unit_type == bc.UnitType.Rocket:
                   if unit.location.is_on_planet(bc.Planet.Earth):
+                    nearby = gc.sense_nearby_units(location.map_location(), 1)
+                    for other in nearby:
+                      if gc.can_load(other.id,unit.id):
+                        gc.load(other.id,unit.id)
+                        print('loaded into the rocket!')
                     garrison == unit.structure_garrison()
-                    countNeeded = 8
+                    countNeeded = 1
                     if vrgn == False:
-                      countNeeded = 6
+                      countNeeded = 1
                     if len(garrison) >= countNeeded and len(garrison) <= 8:
                       tempPlanetMap = gc.planet_map(bc.Planet.Mars)
                       tempLoc = MapLocation(bc.Planet.Mars, (int)(
@@ -445,39 +448,10 @@ while True:
                       if len(garrison) > 0:
                         d = random.choice(directions)  # good for now, change later
                         if gc.can_unload(unit.id, d):
-
                           print ("unloaded")
                           gc.unload(unit.id, d)
                           continue
-                        else:
-                          for tilt in tryRotate:
-
-                            newD = rotate(d, tilt)
-                            while gc.can_unload(unit.id, d):
-                              print ("unloaded")
-                              gc.unload(unit.id, d)
-                              factory_move(gc.unit(unit.id))
                       
-                if unit.unit_type == bc.UnitType.Factory:
-
-                    garrison = unit.structure_garrison()
-
-                    if len(garrison) > 0:
-                      d = random.choice(directions) #good for now, change later
-                      if gc.can_unload(unit.id, d):
-                        print ("unloaded")
-                        gc.unload(unit.id, d)
-                        continue
-                      else:
-                        for tilt in tryRotate:
-                          newD = rotate(d, tilt)
-                          while gc.can_unload(unit.id, d):
-                            print ("unloaded")
-                            gc.unload(unit.id, d)
-                            factory_move(gc.unit(unit.id))
-                          break
-                    if touchedMars: #touchedMars = true
-                      robotProportions = getRobotProportions(round)
                 if unit.unit_type == bc.UnitType.Worker:
                   if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
                     for q in directions:
@@ -501,11 +475,14 @@ while True:
                   if gc.karbonite() > bc.UnitType.Factory.blueprint_cost():#blueprint
                     if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
                       gc.blueprint(unit.id, bc.UnitType.Factory, d)
+
                       continue
                   adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 2)
                   for adjacent in adjacentUnits:#build
                     if gc.can_build(unit.id,adjacent.id):
                       gc.build(unit.id,adjacent.id)
+                      if adjacent.id == bc.UnitType.Rocket:
+                        print("ROCKET BUILT!")
                       continue
                   #head toward blueprint location
                   if gc.is_move_ready(unit.id):
