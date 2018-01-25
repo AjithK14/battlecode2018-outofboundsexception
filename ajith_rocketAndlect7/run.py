@@ -433,9 +433,9 @@ while True:
                         gc.load(other.id,unit.id)
                         print('loaded into the rocket!')
                     garrison == unit.structure_garrison()
-                    countNeeded = 0
+                    countNeeded = 1
                     if vrgn == False:
-                      countNeeded = 0
+                      countNeeded = 1
                     if len(garrison) >= countNeeded and len(garrison) <= 8:
                       tempPlanetMap = gc.planet_map(bc.Planet.Mars)
                       tempLoc = MapLocation(bc.Planet.Mars, (int)(
