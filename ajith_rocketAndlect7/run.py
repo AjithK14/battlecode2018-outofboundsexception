@@ -403,17 +403,10 @@ while True:
     try:
           
           dmap = mmap(w,h)
-          for unit in gc.units():
-            if not unit.location.is_in_garrison():
-
-              if unit.team!=my_team:
-
-                dmap.addDisk(unit.location.map_location(),50,1)
-          
           numWorkers = 0
           blueprintLocation = None
           blueprintWaiting = False
-          for unit in gc.my_units():
+          for unit in gc.units():
             if unit.unit_type== bc.UnitType.Factory:
               if not unit.structure_is_built():
                 ml = unit.location.map_location()
@@ -421,7 +414,12 @@ while True:
                 blueprintWaiting = True
             if unit.unit_type== bc.UnitType.Worker:
               numWorkers+=1
+            if not unit.location.is_in_garrison():
+              if unit.team!=my_team:
+                dmap.addDisk(unit.location.map_location(),50,1)
           
+          for unit in gc.my_units():
+            
             location = unit.location
             if location.is_on_map():
                 
