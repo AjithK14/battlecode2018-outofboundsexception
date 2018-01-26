@@ -496,9 +496,8 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
         if vrgn == False:
           countNeeded = 5
         if len(garrison) >= countNeeded and len(garrison) <= maxRocketGarrison:
-          tempPlanetMap = gc.planet_map(bc.Planet.Mars)
-          tempLoc = MapLocation(bc.Planet.Mars, (int)(
-              Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
+          tempPlanetMap = marsMap
+          tempLoc = bc.MapLocation(bc.Planet.Mars, (int)(tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
           if gc.can_launch_rocket(unit.id, tempLoc):
             gc.launch_rocket(unit.id, tempLoc)
             vrgn = False
