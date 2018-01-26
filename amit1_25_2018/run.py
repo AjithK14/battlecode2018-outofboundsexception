@@ -481,31 +481,32 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
       print ("tf")
 
     if unit.location.is_on_planet(bc.Planet.Earth):
-      location.map_location()
-      nearby = gc.sense_nearby_units(location.map_location(), 2)
-      #print("nearby units to the rocket", nearby)
-      for other in nearby:
-        if gc.can_load(unit.id,other.id):
-          gc.load(unit.id,other.id)
-          print('loaded into the rocket!')
+      if not unit.location.is_in_space() and not unit.location.is_in_garrison():
+        location.map_location()
+        nearby = gc.sense_nearby_units(location.map_location(), 2)
+        #print("nearby units to the rocket", nearby)
+        for other in nearby:
+          if gc.can_load(unit.id,other.id):
+            gc.load(unit.id,other.id)
+            print('loaded into the rocket!')
 
-      garrison = unit.structure_garrison()
-      countNeeded = 8
-      if vrgn == False:
-        countNeeded = 6
-      if len(garrison) >= countNeeded and len(garrison) <= maxRocketGarrison:
-        tempPlanetMap = gc.planet_map(bc.Planet.Mars)
-        tempLoc = MapLocation(bc.Planet.Mars, (int)(
-            Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
-        if gc.can_launch_rocket(unit.id, tempLoc):
-          gc.launch_rocket(unit.id, tempLoc)
-          vrgn = False
-          firstRocketLaunched = True
-          print ("Rocket Launched!!!")
-        else:
-          print ("Rocket failed to launch")
+        garrison = unit.structure_garrison()
+        countNeeded = 8
+        if vrgn == False:
+          countNeeded = 6
+        if len(garrison) >= countNeeded and len(garrison) <= maxRocketGarrison:
+          tempPlanetMap = gc.planet_map(bc.Planet.Mars)
+          tempLoc = MapLocation(bc.Planet.Mars, (int)(
+              Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
+          if gc.can_launch_rocket(unit.id, tempLoc):
+            gc.launch_rocket(unit.id, tempLoc)
+            vrgn = False
+            firstRocketLaunched = True
+            print ("Rocket Launched!!!")
+          else:
+            print ("Rocket failed to launch")
 
-    elif unit.location.is_on_planet(bc.Planet.Earth):
+    elif unit.location.is_on_planet(bc.Planet.Mars):
       garrison = unit.structure_garrison();
       print(garrison)
       print("LANDED AND UNLOADING")
