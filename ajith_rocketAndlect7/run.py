@@ -439,6 +439,9 @@ while True:
                       tempPlanetMap = gc.starting_map(bc.Planet.Mars)
                       tempLoc = bc.MapLocation(bc.Planet.Mars, (int)(
                           tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4))
+                      print((int)(
+                          tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4))
+                      print("CAN WE LAUNCH?", gc.can_launch_rocket(unit.id,tempLoc))
                       if gc.can_launch_rocket(unit.id, tempLoc):
                         print("ROCKET LAUNCHED!!!!!!!!")
                         gc.launch_rocket(unit.id, tempLoc)
