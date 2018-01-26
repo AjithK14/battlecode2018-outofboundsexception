@@ -383,7 +383,7 @@ earthBlueprintLocations = list()
 baseLocations = list()
 
 KHGARRAY = [KHGWORKERS, KHGKNIGHTS, KHGRANGERS, KHGMAGES, KHGHEALERS]
-INITIALKHGARRAY = [KHGWORKERS + STAYERS, KHGKNIGHTS + STAYERS, KHGRANGERS + STAYERS, KHGMAGES + (STAYERS*0), KHGHEALERS + STAYERS]
+INITIALKHGARRAY = [KHGWORKERS + STAYERS, KHGKNIGHTS + STAYERS, KHGRANGERS + STAYERS, KHGMAGES + (STAYERS*3), KHGHEALERS + STAYERS]
 factoryIndex = 0 #controls what the different factories do
 
 earthWorkers = 0
@@ -407,7 +407,7 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
     if not unit.structure_is_built() or unit.health < .75*unit.max_health:
       ml = unit.location.map_location()
       earthBlueprintLocations.append(ml)
-      whereTo[workerNum, str(gc.planet())] = ml, 1, 1
+      whereTo[workerNum, str(gc.planet())] = ml, 1, 2
 
 
     garrison = unit.structure_garrison()
@@ -430,34 +430,31 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
 
 
     if firstRocketLaunched == True:
-      currentRobotArray = [0, 0, 0, 0, 0]
-      for unit in gc.my_units():
-          if unit.unit_type == bc.UnitType.Worker:
-            currentRobotArray[0] += 1
-          elif unit.unit_type == bc.UnitType.Knight:
-              currentRobotArray[1] += 1
-          elif unit.unit_type == bc.UnitType.Ranger:
-              currentRobotArray[2] += 1 
-          elif unit.unit_type == bc.UnitType.Mage:
-              currentRobotArray[3] += 1
-          elif unit.unit_type == bc.UnitType.Healer:
-              currentRobotArray[4] += 1
+        currentRobotArray = [0, 0, 0, 0, 0]
 
-          deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
-               INITIALKHGARRAY[1] - currentRobotArray[1],
-               INITIALKHGARRAY[2] - currentRobotArray[2],
-               INITIALKHGARRAY[3] - currentRobotArray[3],
-               INITIALKHGARRAY[4] - currentRobotArray[4]]
+        for unit in gc.my_units():
+            if unit.unit_type == bc.UnitType.Worker:
+              currentRobotArray[0] += 1
+            elif unit.unit_type == bc.UnitType.Knight:
+                currentRobotArray[1] += 1
+            elif unit.unit_type == bc.UnitType.Ranger:
+                currentRobotArray[2] += 1 
+            elif unit.unit_type == bc.UnitType.Mage:
+                currentRobotArray[3] += 1
+            elif unit.unit_type == bc.UnitType.Healer:
+                currentRobotArray[4] += 1
 
-          index = deficit.index(max(deficit))
-          robotType = robots[index]
-          if gc.can_produce_robot(unit.id, robotType):
-              gc.produce_robot(unit.id, robotType)
-              print('producing a robot!')
+        deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+             INITIALKHGARRAY[1] - currentRobotArray[1],
+             INITIALKHGARRAY[2] - currentRobotArray[2],
+             INITIALKHGARRAY[3] - currentRobotArray[3],
+             INITIALKHGARRAY[4] - currentRobotArray[4]]
 
-          else:
-            curKarbonite = gc.karbonite()
-            print (str(curKarbonite) + ", " + str(factoryCosts[index]))
+        index = deficit.index(max(deficit))
+        robotType = robots[index]
+        if gc.can_produce_robot(unit.id, robotType):
+            gc.produce_robot(unit.id, robotType)
+            print('producing a robot!')
 
     else: #firstRocketLaunched = true
       robotProportions = getRobotProportions(round)
@@ -469,17 +466,18 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
 def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
 
   global firstRocketLaunched
+
   if unit.unit_type == bc.UnitType.Rocket:
     global vrgn #so I can access it whenever
     if not unit.structure_is_built() or unit.health < .75*unit.max_health:
       ml = unit.location.map_location()
       earthBlueprintLocations.append(ml)
       blueprintWaiting = True
-      whereTo[workerNum, str(gc.planet())] = ml, 1, 1
+      whereTo[workerNum, str(gc.planet())] = ml, 1, 2
       return
 
     if gc.planet() == bc.Planet.Earth:
-      nearby = gc.sense_nearby_units(location.map_location(), 2)
+      nearby = gc.sense_nearby_units(location.map_location(), 1)
       for other in nearby:
         if gc.can_load(unit.id,other.id):
           gc.load(unit.id,other.id)
@@ -491,7 +489,7 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
       if len(garrison) >= countNeeded and len(garrison) <= maxRocketGarrison:
         tempPlanetMap = gc.planet_map(bc.Planet.Mars)
         tempLoc = MapLocation(bc.Planet.Mars, (int)(
-            Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4))
+            Mars, tempPlanetMap.width / 4), (int)(Mars, tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
         if gc.can_launch_rocket(unit.id, tempLoc):
           gc.launch_rocket(unit.id, tempLoc)
           vrgn = False
@@ -509,7 +507,7 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
         prevUnloadedUnits=unloadedUnits
         for d in directions: # good for now, change later
           if gc.can_unload(unit.id, d):
-            print ("unloaded")
+            print ("rocket unloaded")
             unloadedUnits+=1
             gc.unload(unit.id, d)
             continue
@@ -550,6 +548,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
 
       adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1) 
       for adjacent in adjacentUnits:#once you build, you need to take it out of earthBlueprintLocations
+        print ("in adjacents")
         if gc.can_build(unit.id,adjacent.id):
           gc.build(unit.id,adjacent.id)
           if adjacent.id == bc.UnitType.Rocket:
@@ -585,14 +584,13 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
       if gc.karbonite() > coefficient() * bc.UnitType.Factory.blueprint_cost():#blueprint
         if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
           gc.blueprint(unit.id, bc.UnitType.Factory, d)
-          print ("BLUEPRINTED FACTORY")
 
       #head toward blueprint locations
       if unit.movement_heat() < maxRobotMovementHeat: 
         for blueprintLocation in earthBlueprintLocations: #this system handles multiple blueprints, going to the first one
           ml = unit.location.map_location()
           bdist = ml.distance_squared_to(blueprintLocation)
-          if bdist>5: #increased from 2, change to a constant
+          if bdist>6: #increased from 2, change to a constant
             fuzzygoto(unit, blueprintLocation)
             return #can't do anything else at this point
 
@@ -689,6 +687,9 @@ while True:
               numWorkers+=1
 
           for unit in gc.my_units():
+
+            if unit.location.is_in_space():
+              continue
 
             factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched)
 
