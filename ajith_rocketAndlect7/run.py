@@ -417,9 +417,9 @@ while True:
             if not unit.location.is_in_garrison():
               if unit.team!=my_team:
                 dmap.addDisk(unit.location.map_location(),50,1)
-          
+          print("Karbonite:", gc.karbonite())
           for unit in gc.my_units():
-            print(unit.unit_type)
+            #print(unit.unit_type)
             location = unit.location
             if location.is_on_map():
                 
@@ -522,11 +522,11 @@ while True:
                     if gc.can_unload(unit.id, d):
                       gc.unload(unit.id, d)
                       continue
-                  elif gc.can_produce_robot(unit.id, bc.UnitType.Mage):#produce Mages
-                    gc.produce_robot(unit.id, bc.UnitType.Mage)
+                  elif gc.can_produce_robot(unit.id, bc.UnitType.Knight):#produce Mages
+                    gc.produce_robot(unit.id, bc.UnitType.Knight)
                     continue
                 
-                if unit.unit_type == bc.UnitType.Mage:
+                if unit.unit_type == bc.UnitType.Knight:
                   #print(unit.unit_type)
                   if not unit.location.is_in_garrison():#can't move from inside a factory
                     attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
