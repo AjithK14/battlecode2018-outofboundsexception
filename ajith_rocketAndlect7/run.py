@@ -532,6 +532,7 @@ while True:
                   #print(unit.unit_type)
                   if not unit.location.is_in_garrison():#can't move from inside a factory
                     attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
+                    shouldNOTAttackSomething = False
                     if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
                       if gc.is_attack_ready(unit.id):
                         gc.attack(unit.id, attackableEnemies[0].id)
@@ -539,16 +540,12 @@ while True:
                       nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
                       if len(nearbyEnemies)>0:
                         destination=nearbyEnemies[0].location.map_location()
-                        fuzzygoto(unit,destination)
                       else:
                         if unit.location.is_on_planet(bc.Planet.Earth):
                           destination=enemyStart
-                          fuzzygoto(unit,destination)
-                        else:
-                          for d in directions:
-                            if gc.can_move(unit.id,d):
-                              gc.move_robot(unit.id,d)
-                              break
+                        else: shouldNOTAttackSomething=True
+
+                      if not shouldNOTAttackSomething: fuzzygoto(unit,destination)
                       
 
                 
