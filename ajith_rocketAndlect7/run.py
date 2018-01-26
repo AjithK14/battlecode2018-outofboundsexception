@@ -431,7 +431,7 @@ while True:
                       if gc.can_load(unit.id,other.id):
                         gc.load(unit.id,other.id)
                         print('loaded into the rocket!')
-                    garrison == unit.structure_garrison()
+                    garrison = unit.structure_garrison()
                     print("GARRISON SIZE", garrison)
                     countNeeded = 1
                     if vrgn == False:
