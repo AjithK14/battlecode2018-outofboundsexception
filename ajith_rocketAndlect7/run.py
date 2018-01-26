@@ -517,6 +517,7 @@ while True:
                 if unit.unit_type == bc.UnitType.Factory:
                   print("LANDED"); cont = False
                   garrison = unit.structure_garrison()
+                  print(gc.can_produce_robot(unit.id, bc.UnitType.Mage), gc.karbonite())
                   if len(garrison) > 0:#ungarrison
                     for d in directions:
                       #d = random.choice(directions)
@@ -525,7 +526,6 @@ while True:
                         cont = True
                         break
                     if cont: continue
-                  print(gc.can_produce_robot(unit.id, bc.UnitType.Mage), gc.karbonite())
                   elif gc.can_produce_robot(unit.id, bc.UnitType.Mage):
                     gc.produce_robot(unit.id, bc.UnitType.Mage)
                     print("produced a mage")
