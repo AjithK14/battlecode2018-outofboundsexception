@@ -462,7 +462,7 @@ while True:
                             unloadedUnits+=1
                             gc.unload(unit.id, d)
                             continue
-                      
+                
                 if unit.unit_type == bc.UnitType.Worker:
                   #print("work")
                   if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
@@ -474,7 +474,6 @@ while True:
                         #whereTo[0, gc.planet()] = rocketLocation, 1, 1
                         first_rocket = True
                         break
-                if unit.unit_type == bc.UnitType.Worker:
                   #print(unit.unit_type)
                   d = random.choice(directions)
                   if numWorkers<10:
@@ -525,11 +524,11 @@ while True:
                     if gc.can_unload(unit.id, d):
                       gc.unload(unit.id, d)
                       continue
-                  elif gc.can_produce_robot(unit.id, bc.UnitType.Knight):#produce Mages
-                    gc.produce_robot(unit.id, bc.UnitType.Knight)
+                  elif gc.can_produce_robot(unit.id, bc.UnitType.Mage):#produce Mages
+                    gc.produce_robot(unit.id, bc.UnitType.Mage)
                     continue
                 
-                if unit.unit_type == bc.UnitType.Knight:
+                if unit.unit_type == bc.UnitType.Mage:
                   #print(unit.unit_type)
                   if not unit.location.is_in_garrison():#can't move from inside a factory
                     attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
