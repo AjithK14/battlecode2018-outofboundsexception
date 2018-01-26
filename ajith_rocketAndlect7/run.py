@@ -417,7 +417,6 @@ while True:
             if not unit.location.is_in_garrison():
               if unit.team!=my_team:
                 dmap.addDisk(unit.location.map_location(),50,1)
-          print("Karbonite:", gc.karbonite())
           for unit in gc.my_units():
             #print(unit.unit_type)
             location = unit.location
