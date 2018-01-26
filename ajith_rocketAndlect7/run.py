@@ -280,7 +280,7 @@ def fuzzygoto(unit,dest):
   for tilt in tryRotate:
     d = rotate(toward,tilt)
     newLoc = unit.location.map_location().add(d)
-    if dmap.get(newLoc)==0:
+    if True or dmap.get(newLoc)==0:
       if gc.can_move(unit.id, d):
         gc.move_robot(unit.id,d)
         break
@@ -483,7 +483,6 @@ while True:
                   if gc.karbonite() > bc.UnitType.Factory.blueprint_cost():#blueprint
                     if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
                       gc.blueprint(unit.id, bc.UnitType.Factory, d)
-
                       continue
                   adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1)
                   for adjacent in adjacentUnits:#build
