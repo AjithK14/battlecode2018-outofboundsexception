@@ -467,6 +467,8 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
 
   global firstRocketLaunched
 
+  # unit is rocket
+
   if unit.unit_type == bc.UnitType.Rocket and unit.location.is_on_map():
     global vrgn #so I can access it whenever
     if unit.location.is_in_space():
@@ -477,10 +479,8 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
       blueprintWaiting = True
       whereTo[workerNum, str(gc.planet())] = ml, 1, 2
 
-    if unit.location.is_in_space() or unit.location.is_in_garrison():
-      print ("tf")
-
     if unit.location.is_on_planet(bc.Planet.Earth):
+
       if not unit.location.is_in_space() and not unit.location.is_in_garrison():
         location.map_location()
         nearby = gc.sense_nearby_units(location.map_location(), 2)
@@ -561,7 +561,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
         if gc.can_build(unit.id,adjacent.id) and adjacent.health != adjacent.max_health:
           gc.build(unit.id,adjacent.id)
           if adjacent.unit_type == bc.UnitType.Rocket:
-            print("ROCKET BEING BUILT!")
+            #print("ROCKET BEING BUILT!")
             if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
               earthBlueprintLocations.remove(adjacentLocation)
 
