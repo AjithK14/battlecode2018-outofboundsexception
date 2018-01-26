@@ -467,21 +467,28 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
 
   global firstRocketLaunched
 
-  if unit.unit_type == bc.UnitType.Rocket:
+  if unit.unit_type == bc.UnitType.Rocket and unit.location.is_on_map():
     global vrgn #so I can access it whenever
+    if unit.location.is_in_space():
+      return
     if not unit.structure_is_built() or unit.health < .75*unit.max_health:
       ml = unit.location.map_location()
       earthBlueprintLocations.append(ml)
       blueprintWaiting = True
       whereTo[workerNum, str(gc.planet())] = ml, 1, 2
-      return
 
-    if gc.planet() == bc.Planet.Earth:
-      nearby = gc.sense_nearby_units(location.map_location(), 1)
+    if unit.location.is_in_space() or unit.location.is_in_garrison():
+      print ("tf")
+
+    if unit.location.is_on_planet(bc.Planet.Earth):
+      location.map_location()
+      nearby = gc.sense_nearby_units(location.map_location(), 2)
+      #print("nearby units to the rocket", nearby)
       for other in nearby:
         if gc.can_load(unit.id,other.id):
           gc.load(unit.id,other.id)
           print('loaded into the rocket!')
+
       garrison = unit.structure_garrison()
       countNeeded = 8
       if vrgn == False:
@@ -497,7 +504,8 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
           print ("Rocket Launched!!!")
         else:
           print ("Rocket failed to launch")
-    else:
+
+    elif unit.location.is_on_planet(bc.Planet.Earth):
       garrison = unit.structure_garrison();
       print(garrison)
       print("LANDED AND UNLOADING")
@@ -549,7 +557,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
       adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1) 
       for adjacent in adjacentUnits:#once you build, you need to take it out of earthBlueprintLocations
         adjacentLocation = adjacent.location.map_location()
-        if gc.can_build(unit.id,adjacent.id):
+        if gc.can_build(unit.id,adjacent.id) and adjacent.health != adjacent.max_health:
           gc.build(unit.id,adjacent.id)
           if adjacent.unit_type == bc.UnitType.Rocket:
             print("ROCKET BEING BUILT!")
@@ -557,11 +565,11 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
               earthBlueprintLocations.remove(adjacentLocation)
 
           elif adjacent.unit_type == bc.UnitType.Factory:
-            print ("FACTORY BEING BUILT!")
+            #print ("FACTORY BEING BUILT!")
             if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
               earthBlueprintLocations.remove(adjacentLocation)
 
-        elif gc.can_repair(unit.id,adjacent.id):
+        elif gc.can_repair(unit.id,adjacent.id) and adjacent.health != adjacent.max_health:
           gc.repair(unit.id,adjacent.id)
           if adjacent.unit_type == bc.UnitType.Rocket:
             print("ROCKET BEING REPAIRED!")
@@ -569,7 +577,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
               earthBlueprintLocations.remove(adjacentLocation)
 
           elif adjacent.unit_type == bc.UnitType.Factory:
-            print ("FACTORY BEING REPAIRED!")
+            #print ("FACTORY BEING REPAIRED!")
             if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
               earthBlueprintLocations.remove(adjacentLocation)
 
@@ -590,7 +598,8 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
         for blueprintLocation in earthBlueprintLocations: #this system handles multiple blueprints, going to the first one
           ml = unit.location.map_location()
           bdist = ml.distance_squared_to(blueprintLocation)
-          if bdist>6: #increased from 2, change to a constant
+          if bdist>2:
+            #print ("heading towards blueprint")
             fuzzygoto(unit, blueprintLocation)
             return #can't do anything else at this point
 
