@@ -525,6 +525,7 @@ while True:
                         cont = True
                         break
                     if cont: continue
+                  print(gc.can_produce_robot(unit.id, bc.UnitType.Mage), gc.karbonite())
                   elif gc.can_produce_robot(unit.id, bc.UnitType.Mage):#produce Mages
                     gc.produce_robot(unit.id, bc.UnitType.Mage)
                     print("produced a mage")
