@@ -419,7 +419,7 @@ while True:
                 dmap.addDisk(unit.location.map_location(),50,1)
           
           for unit in gc.my_units():
-            
+            print(unit.unit_type)
             location = unit.location
             if location.is_on_map():
                 
