@@ -425,13 +425,14 @@ while True:
                 if unit.unit_type == bc.UnitType.Rocket:
                   #print("ROCKET")
                   if unit.location.is_on_planet(bc.Planet.Earth):
-                    nearby = gc.sense_nearby_units(location.map_location(), 2)
+                    nearby = gc.sense_nearby_units(location.map_location(), 1)
                     #print("nearby units to the rocket", nearby)
                     for other in nearby:
                       if gc.can_load(unit.id,other.id):
                         gc.load(unit.id,other.id)
                         print('loaded into the rocket!')
-                    garrison == unit.structure_garrison()
+                    garrison = unit.structure_garrison()
+                    print("GARRISON SIZE", garrison)
                     countNeeded = 1
                     if vrgn == False:
                       countNeeded = 1
@@ -439,6 +440,9 @@ while True:
                       tempPlanetMap = gc.starting_map(bc.Planet.Mars)
                       tempLoc = bc.MapLocation(bc.Planet.Mars, (int)(
                           tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4))
+                      print((int)(
+                          tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4))
+                      print("CAN WE LAUNCH?", gc.can_launch_rocket(unit.id,tempLoc))
                       if gc.can_launch_rocket(unit.id, tempLoc):
                         print("ROCKET LAUNCHED!!!!!!!!")
                         gc.launch_rocket(unit.id, tempLoc)
@@ -458,7 +462,7 @@ while True:
                             unloadedUnits+=1
                             gc.unload(unit.id, d)
                             continue
-                      
+                
                 if unit.unit_type == bc.UnitType.Worker:
                   #print("work")
                   if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth):
@@ -470,7 +474,6 @@ while True:
                         #whereTo[0, gc.planet()] = rocketLocation, 1, 1
                         first_rocket = True
                         break
-                if unit.unit_type == bc.UnitType.Worker:
                   #print(unit.unit_type)
                   d = random.choice(directions)
                   if numWorkers<10:
@@ -480,9 +483,8 @@ while True:
                   if gc.karbonite() > bc.UnitType.Factory.blueprint_cost():#blueprint
                     if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
                       gc.blueprint(unit.id, bc.UnitType.Factory, d)
-
                       continue
-                  adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1)
+                  adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 2)
                   for adjacent in adjacentUnits:#build
                     if gc.can_build(unit.id,adjacent.id):
                       gc.build(unit.id,adjacent.id)
@@ -512,20 +514,24 @@ while True:
                           kLocs.pop(0)
                         else:
                           fuzzygoto(unit,dest)
-                
                 if unit.unit_type == bc.UnitType.Factory:
-                  #print(unit.unit_type)
+                  print("LANDED"); cont = False
                   garrison = unit.structure_garrison()
+                  print(gc.can_produce_robot(unit.id, bc.UnitType.Mage), gc.karbonite())
                   if len(garrison) > 0:#ungarrison
-                    d = random.choice(directions)
-                    if gc.can_unload(unit.id, d):
-                      gc.unload(unit.id, d)
-                      continue
-                  elif gc.can_produce_robot(unit.id, bc.UnitType.Knight):#produce Mages
-                    gc.produce_robot(unit.id, bc.UnitType.Knight)
+                    for d in directions:
+                      #d = random.choice(directions)
+                      if gc.can_unload(unit.id, d):
+                        gc.unload(unit.id, d)
+                        cont = True
+                        break
+                    if cont: continue
+                  elif gc.can_produce_robot(unit.id, bc.UnitType.Mage):
+                    gc.produce_robot(unit.id, bc.UnitType.Mage)
+                    print("produced a mage")
                     continue
                 
-                if unit.unit_type == bc.UnitType.Knight:
+                if unit.unit_type == bc.UnitType.Mage:
                   #print(unit.unit_type)
                   if not unit.location.is_in_garrison():#can't move from inside a factory
                     attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
@@ -561,7 +567,8 @@ while True:
               # pick a random direction:
 
        #possibly useless piece of code begins
-       
+      
+          print("END OF TURN")   
     except Exception as e:
         print('Error:', e)
         # use this to show where the error was
