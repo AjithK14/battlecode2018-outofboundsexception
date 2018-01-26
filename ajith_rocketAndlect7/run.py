@@ -403,17 +403,10 @@ while True:
     try:
           
           dmap = mmap(w,h)
-          for unit in gc.units():
-            if not unit.location.is_in_garrison():
-
-              if unit.team!=my_team:
-
-                dmap.addDisk(unit.location.map_location(),50,1)
-          
           numWorkers = 0
           blueprintLocation = None
           blueprintWaiting = False
-          for unit in gc.my_units():
+          for unit in gc.units():
             if unit.unit_type== bc.UnitType.Factory:
               if not unit.structure_is_built():
                 ml = unit.location.map_location()
@@ -421,7 +414,11 @@ while True:
                 blueprintWaiting = True
             if unit.unit_type== bc.UnitType.Worker:
               numWorkers+=1
-          
+            if not unit.location.is_in_garrison():
+              if unit.team!=my_team:
+                dmap.addDisk(unit.location.map_location(),50,1)
+          for unit in gc.my_units():
+            #print(unit.unit_type)
             location = unit.location
             if location.is_on_map():
                 
@@ -477,15 +474,9 @@ while True:
                   #print(unit.unit_type)
                   d = random.choice(directions)
                   if numWorkers<10:
-                    replicated=False
-                    for d in directions:
-                      if gc.can_replicate(unit.id,d) and numWorkers < 10:
-                        #print(numWorkers)
-                        gc.replicate(unit.id,d);numWorkers+=1
-                        #print(numWorkers)
-                        replicated=True
-                        break
-                    if replicated:continue
+                    if gc.can_replicate(unit.id,d) and numWorkers < 10:
+                      gc.replicate(unit.id,d);
+                      continue
                   if gc.karbonite() > bc.UnitType.Factory.blueprint_cost():#blueprint
                     if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
                       gc.blueprint(unit.id, bc.UnitType.Factory, d)
@@ -530,14 +521,15 @@ while True:
                     if gc.can_unload(unit.id, d):
                       gc.unload(unit.id, d)
                       continue
-                  elif gc.can_produce_robot(unit.id, bc.UnitType.Ranger):#produce Mages
-                    gc.produce_robot(unit.id, bc.UnitType.Ranger)
+                  elif gc.can_produce_robot(unit.id, bc.UnitType.Knight):#produce Mages
+                    gc.produce_robot(unit.id, bc.UnitType.Knight)
                     continue
                 
-                if unit.unit_type == bc.UnitType.Ranger:
+                if unit.unit_type == bc.UnitType.Knight:
                   #print(unit.unit_type)
                   if not unit.location.is_in_garrison():#can't move from inside a factory
                     attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
+                    shouldNOTAttackSomething = False
                     if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
                       if gc.is_attack_ready(unit.id):
                         gc.attack(unit.id, attackableEnemies[0].id)
@@ -545,16 +537,12 @@ while True:
                       nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
                       if len(nearbyEnemies)>0:
                         destination=nearbyEnemies[0].location.map_location()
-                        fuzzygoto(unit,destination)
                       else:
                         if unit.location.is_on_planet(bc.Planet.Earth):
                           destination=enemyStart
-                          fuzzygoto(unit,destination)
-                        else:
-                          for d in directions:
-                            if gc.can_move(unit.id,d):
-                              gc.move_robot(unit.id,d)
-                              break
+                        else: shouldNOTAttackSomething=True
+
+                      if not shouldNOTAttackSomething: fuzzygoto(unit,destination)
                       
 
                 
