@@ -280,7 +280,7 @@ def fuzzygoto(unit,dest):
   for tilt in tryRotate:
     d = rotate(toward,tilt)
     newLoc = unit.location.map_location().add(d)
-    if True or dmap.get(newLoc)==0:
+    if dmap.get(newLoc)==0:
       if gc.can_move(unit.id, d):
         gc.move_robot(unit.id,d)
         break
@@ -514,9 +514,8 @@ while True:
                           kLocs.pop(0)
                         else:
                           fuzzygoto(unit,dest)
-                
                 if unit.unit_type == bc.UnitType.Factory:
-                  #print(unit.unit_type)
+                  print("LANDED")
                   garrison = unit.structure_garrison()
                   if len(garrison) > 0:#ungarrison
                     d = random.choice(directions)
