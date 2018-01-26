@@ -566,7 +566,7 @@ while True:
               # pick a random direction:
 
        #possibly useless piece of code begins
-       
+    print("END OF TURN")   
     except Exception as e:
         print('Error:', e)
         # use this to show where the error was
