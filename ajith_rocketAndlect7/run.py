@@ -515,15 +515,19 @@ while True:
                         else:
                           fuzzygoto(unit,dest)
                 if unit.unit_type == bc.UnitType.Factory:
-                  print("LANDED")
+                  print("LANDED"); cont = False
                   garrison = unit.structure_garrison()
                   if len(garrison) > 0:#ungarrison
-                    d = random.choice(directions)
-                    if gc.can_unload(unit.id, d):
-                      gc.unload(unit.id, d)
-                      continue
+                    for d in directions:
+                      #d = random.choice(directions)
+                      if gc.can_unload(unit.id, d):
+                        gc.unload(unit.id, d)
+                        cont = True
+                        break
+                    if cont: continue
                   elif gc.can_produce_robot(unit.id, bc.UnitType.Mage):#produce Mages
                     gc.produce_robot(unit.id, bc.UnitType.Mage)
+                    print("produced a mage")
                     continue
                 
                 if unit.unit_type == bc.UnitType.Mage:
