@@ -478,7 +478,7 @@ while True:
                   d = random.choice(directions)
                   if numWorkers<10:
                     if gc.can_replicate(unit.id,d) and numWorkers < 10:
-                      gc.replicate(unit.id,d);numWorkers+=1
+                      gc.replicate(unit.id,d);
                       continue
                   if gc.karbonite() > bc.UnitType.Factory.blueprint_cost():#blueprint
                     if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
