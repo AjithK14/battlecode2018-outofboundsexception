@@ -250,7 +250,7 @@ def astar(unit, dest):
   while len(openSet) >0:
     minKey = min(openSet, key=openSet.get)
     
-    if minKey[0]==dest.x and minKey[1]==dest.y:
+    if unit.vision_range == EDH(start[0],start[1],minKey[0],minKey[1]) or (minKey[0]==dest.x and minKey[1]==dest.y):
       reconPath(cameFrom,minKey,start,unit)
       break;
     del openSet[minKey]
