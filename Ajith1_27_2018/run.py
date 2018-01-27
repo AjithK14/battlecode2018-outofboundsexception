@@ -333,21 +333,22 @@ def reconPath(cameFrom,minKey,start,unit):
     while minKey in cameFrom:
       minKey = cameFrom[minKey]
       totalPath.append(minKey)
-      #print(totalPath)
-    dy = totalPath[-2][1]-totalPath[-1][1]
-    dx = totalPath[-2][0]-totalPath[-1][0]
-    #print(dx, dy)
-    if dy == 1:
-      if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
-      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
-      else: gc.move_robot(unit.id,bc.Direction.Northwest); return
-    elif dy == 0:
-      if dx == 1: gc.move_robot(unit.id,bc.Direction.East); return
-      else: gc.move_robot(unit.id,bc.Direction.West) ; return
-    else:
-      if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
-      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
-      else: print("MOVEMENT HEAT", unit.movement_heat()<10);gc.move_robot(unit.id,bc.Direction.Southwest); return
+    print(totalPath)
+    if len(totalPath) >= 2: 
+      dy = totalPath[-2][1]-totalPath[-1][1]
+      dx = totalPath[-2][0]-totalPath[-1][0]
+      #print(dx, dy)
+      if dy == 1:
+        if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
+        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
+        else: gc.move_robot(unit.id,bc.Direction.Northwest); return
+      elif dy == 0:
+        if dx == 1: gc.move_robot(unit.id,bc.Direction.East); return
+        else: gc.move_robot(unit.id,bc.Direction.West) ; return
+      else:
+        if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
+        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
+        else: print("MOVEMENT HEAT", unit.movement_heat()<10);gc.move_robot(unit.id,bc.Direction.Southwest); return
   return
 
 def go_to(unit, dest):  # using bugnav
@@ -509,7 +510,7 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
       return
 
 
-    if True == True: #want good proportions regardles
+    if True: #want good proportions regardles
       currentRobotArray = [0, 0, 0, 0, 0]
 
       currentRobotArray = countUnits(currentRobotArray)
@@ -609,7 +610,7 @@ def rocketProtocol(unit, earthBlueprintLocations):
             continue
 
 def coefficient():
-  return 2
+  return 1
 
 def workerProtocol(unit, earthBlueprintLocations, numWorkers):
 
@@ -650,12 +651,12 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
         if gc.can_build(unit.id,adjacent.id) and adjacent.health != adjacent.max_health:
           gc.build(unit.id,adjacent.id)
           if adjacent.unit_type == bc.UnitType.Rocket:
-            # print("ROCKET BEING BUILT!")
+            print("ROCKET BEING BUILT!")
             if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
               earthBlueprintLocations.remove(adjacentLocation)
 
           elif adjacent.unit_type == bc.UnitType.Factory:
-            #print ("FACTORY BEING BUILT!")
+            print ("FACTORY BEING BUILT!")
             if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
               earthBlueprintLocations.remove(adjacentLocation)
 
@@ -678,11 +679,10 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           gc.attack(unit.id, attackableEnemies[0].id)'''
 
       #blueprint factories
-      d = random.choice(directions)
-      if gc.karbonite() > coefficient() * bc.UnitType.Factory.blueprint_cost():#blueprint
-        if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
+      for d in allDirections:
+        if gc.karbonite() > bc.UnitType.Factory.blueprint_cost() and gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
           gc.blueprint(unit.id, bc.UnitType.Factory, d)
-
+          break
       #head toward blueprint locations
       if unit.movement_heat() < maxRobotMovementHeat: 
         for blueprintLocation in earthBlueprintLocations: #this system handles multiple blueprints, going to the first one
@@ -690,7 +690,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           bdist = ml.distance_squared_to(blueprintLocation)
           if bdist>2:
             #print ("heading towards blueprint")
-            fuzzygoto(unit, blueprintLocation)
+            astar(unit, blueprintLocation)
             return #can't do anything else at this point
 
       if len(kLocs)>0 and unit.movement_heat() < maxRobotMovementHeat: #need to go looking for karbonite
@@ -700,7 +700,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           if kAmt==0:
             kLocs.pop(0)
           else:
-            fuzzygoto(unit,dest)
+            astar(unit,dest)
 
 
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
