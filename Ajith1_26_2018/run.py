@@ -252,6 +252,7 @@ def astar(unit, dest):
     
     if minKey[0]==dest.x and minKey[1]==dest.y:
       reconPath(cameFrom,minKey,start,unit)
+      return;
     del openSet[minKey]
     closedSet.add(minKey)
 
