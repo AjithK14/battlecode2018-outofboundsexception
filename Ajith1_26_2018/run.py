@@ -640,6 +640,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           if bdist>2:
             #print ("heading towards blueprint")
             astar(unit, blueprintLocation)
+            break
             return #can't do anything else at this point
 
       if len(kLocs)>0 and unit.movement_heat() < maxRobotMovementHeat: #need to go looking for karbonite
