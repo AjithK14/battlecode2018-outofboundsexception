@@ -30,7 +30,7 @@ mageNum = 3
 healerNum = 4
 
 earthMap = gc.starting_map(bc.Planet.Earth)
-marsMap = gc.startint_map(bc.Planet.Mars)
+marsMap = gc.starting_map(bc.Planet.Mars)
 start = None
 enemyStart = None
 roundsBack = 10
