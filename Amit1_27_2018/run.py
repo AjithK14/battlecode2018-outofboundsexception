@@ -555,9 +555,11 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
         gc.produce_robot(unit.id, bc.UnitType.Ranger)
         print ("produced ranger")
 
-def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
+def rocketProtocol(unit, earthBlueprintLocations):
 
   global firstRocketLaunched
+  global touchedMars
+  global first_rocket
   global maxRocketGarrison
   if unit.unit_type == bc.UnitType.Rocket and unit.location.is_on_map():
     global vrgn #so I can access it whenever
@@ -592,8 +594,10 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
           if gc.can_launch_rocket(unit.id, tempLoc):
             gc.launch_rocket(unit.id, tempLoc)
             vrgn = False
-            firstRocketLaunched = True
             print ("Rocket Launched!!!")
+            #getting everything ready to make a new rocket
+            first_rocket = False
+            touchedMars = False
           else:
             print ("Rocket failed to launch")
 
@@ -793,7 +797,7 @@ while True:
 
             factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched)
 
-            rocketProtocol(unit, first_rocket, earthBlueprintLocations)
+            rocketProtocol(unit, earthBlueprintLocations)
 
             location = unit.location
             if location.is_on_map() == True and location.is_in_garrison() == False:
