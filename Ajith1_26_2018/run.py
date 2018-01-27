@@ -264,7 +264,7 @@ def astar(unit, dest):
       
       if shouldExit:
         continue
-      if not (0<=neighbor[0]<unitPlanetWidth or 0<=neighbor[1]<unitPlanetHeight):
+      if (neighbor[0]<0 or neighbor[0]>=unitPlanetWidth or neighbor[1]<0 or neighbor[1]>=unitPlanetHeight):
         continue
 
       if neighbor not in openSet:
