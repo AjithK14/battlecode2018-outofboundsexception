@@ -256,7 +256,7 @@ def astar(unit, dest):
     del openSet[minKey]
     #print("CURRENT NODE:", minKey[0], minKey[1])
     if unit.vision_range-3 <= EDH(start[0],start[1],minKey[0],minKey[1]) or (minKey[0]==dest.x and minKey[1]==dest.y):
-      reconPath(cameFrom, minKey,start, unit)
+      reconPath(cameFrom,minKey,start,unit)
       break;
     
     closedSet.add(minKey)
@@ -292,73 +292,31 @@ def astar(unit, dest):
       fScore[neighbor] = gScore[neighbor] + EDH(neighbor[0],neighbor[1],dest.x,dest.y)
   return;
 
-def fuzzydirection(unit, toward):
-  for tilt in tryRotate:
-    d = rotate(toward,tilt)
-    newLoc = unit.location.map_location().add(d)
-    if dmap.get(newLoc)==0:
-      if gc.can_move(unit.id, d):
-        gc.move_robot(unit.id, d)
-        break 
-
 def reconPath(cameFrom,minKey,start,unit):
   #print(cameFrom)
-  #print(start)
+  print("Start", start)
   #print(minKey)
-  if unit.movement_heat() < 10 and gc.is_move_ready(unit.id):
+  if unit.movement_heat() < 10:
     totalPath = [minKey]
     while minKey in cameFrom:
       minKey = cameFrom[minKey]
       totalPath.append(minKey)
-    dy = totalPath[1][1]-minKey[1]
-    dx = totalPath[1][0]-minKey[0]
+      #print(totalPath)
+    dy = totalPath[-2][1]-totalPath[-1][1]
+    dx = totalPath[-2][0]-totalPath[-1][0]
     #print(dx, dy)
     if dy == 1:
-      if dx == 0:
-        #fuzzydirection(unit, bc.Direction.North)
-        if gc.can_move(unit.id, bc.Direction.North):
-          gc.move_robot(unit.id,bc.Direction.North); 
-        return
-      elif dx ==1: 
-        #fuzzydirection(unit, bc.Direction.Northeast)
-        if gc.can_move(unit.id, bc.Direction.Northeast):
-          gc.move_robot(unit.id,bc.Direction.Northeast); 
-        return
-      else: 
-        #fuzzydirection(unit, bc.Direction.Northwest)
-        if gc.can_move(unit.id, bc.Direction.Northwest):
-          gc.move_robot(unit.id,bc.Direction.Northwest); 
-        return
+      if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
+      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
+      else: gc.move_robot(unit.id,bc.Direction.Northwest); return
     elif dy == 0:
-      if dx == 1: 
-        #fuzzydirection(unit, bc.Direction.East)
-        if gc.can_move(unit.id, bc.Direction.East):
-          gc.move_robot(unit.id,bc.Direction.East);
-        return
-      else:
-        #fuzzydirection(unit, bc.Direction.West)
-        if gc.can_move(unit.id, bc.Direction.West):
-          gc.move_robot(unit.id,bc.Direction.West);
-        return
+      if dx == 1: gc.move_robot(unit.id,bc.Direction.East); return
+      else: gc.move_robot(unit.id,bc.Direction.West) ; return
     else:
-      if dx == 0:
-        #fuzzydirection(unit, bc.Direction.South)
-        if gc.can_move(unit.id, bc.Direction.South):
-          gc.move_robot(unit.id,bc.Direction.South);
-        return
-      elif dx ==1: 
-        #fuzzydirection(unit, bc.Direction.Southeast)
-        if gc.can_move(unit.id, bc.Direction.Southeast):
-          gc.move_robot(unit.id,bc.Direction.Southeast);
-        return
-      else:
-        #print("MOVEMENT HEAT", unit.movement_heat()<10);
-        #fuzzydirection(unit, bc.Direction.Southwest)
-        if gc.can_move(unit.id, bc.Direction.Southwest):
-          gc.move_robot(unit.id,bc.Direction.Southwest);
-        return
+      if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
+      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
+      else: print("MOVEMENT HEAT", unit.movement_heat()<10);gc.move_robot(unit.id,bc.Direction.Southwest); return
   return
-
 def go_to(unit, dest):  # using bugnav
     # assuming dest is a MapLocation
     if not unit.movement_heat() < maxRobotMovementHeat:
@@ -396,7 +354,6 @@ def fuzzygoto(unit,dest):
       if gc.can_move(unit.id, d):
         gc.move_robot(unit.id,d)
         break
-
 def fuzzy_go_to(unit, dest):  
     if not unit.movement_heat() < maxRobotMovementHeat:
         return
@@ -517,7 +474,7 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
             gc.unload(unit.id, d)
           break
 
-    if unit.is_factory_producing() == True:
+    if unit.structure_is_built() == False:
       return
 
 
@@ -553,14 +510,13 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
       # build general robots here
       if gc.can_produce_robot(unit.id, bc.UnitType.Ranger):#produce Rangers
         gc.produce_robot(unit.id, bc.UnitType.Ranger)
-        print ("produced ranger")
+        
 
 def rocketProtocol(unit, earthBlueprintLocations):
 
   global firstRocketLaunched
-  global touchedMars
-  global first_rocket
   global maxRocketGarrison
+  global first_rocket
   if unit.unit_type == bc.UnitType.Rocket and unit.location.is_on_map():
     global vrgn #so I can access it whenever
     if unit.location.is_in_space():
@@ -594,10 +550,10 @@ def rocketProtocol(unit, earthBlueprintLocations):
           if gc.can_launch_rocket(unit.id, tempLoc):
             gc.launch_rocket(unit.id, tempLoc)
             vrgn = False
+            firstRocketLaunched = True
             print ("Rocket Launched!!!")
-            #getting everything ready to make a new rocket
-            first_rocket = False
             touchedMars = False
+            first_rocket = False
           else:
             print ("Rocket failed to launch")
 
@@ -615,6 +571,7 @@ def rocketProtocol(unit, earthBlueprintLocations):
             unloadedUnits+=1
             gc.unload(unit.id, d)
             continue
+
 def coefficient():
   return 2
 
@@ -706,7 +663,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           if kAmt==0:
             kLocs.pop(0)
           else:
-            astar(unit,dest)
+            fuzzygoto(unit,dest)
 
 
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
@@ -749,7 +706,7 @@ def clearRoom(unit):
     if adjacent.unit_type == bc.UnitType.Rocket and currentLocation.is_adjacent_to(adjLoc): #gtfo, you don't want to be near a rocket
       towardRocket = currentLocation.direction_to(adjLoc)
       awayFromRocket = rotate(towardRocket, 4) #4 means 180 degrees turn
-      fuzzygoto(unit, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
+      astar(unit, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
 
   myTeamAdjacentUnits = gc.sense_nearby_units_by_team(currentLocation, 1, my_team) #apparently this includes unit itself
   for madjacent in myTeamAdjacentUnits:
@@ -758,7 +715,7 @@ def clearRoom(unit):
       if closedIn(madjacent) == True:
         towardFactory = currentLocation.direction_to(adjLoc)
         awayFromFactory = rotate(towardFactory, 4) #4 means 180 degrees turn
-        fuzzygoto(unit, currentLocation.add(awayFromFactory)) #stay fuzzygoto (don't do astar)
+        astar(unit, currentLocation.add(awayFromFactory)) #stay fuzzygoto (don't do astar)
 
 
 if gc.planet() == bc.Planet.Earth:
@@ -797,7 +754,7 @@ while True:
 
             factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched)
 
-            rocketProtocol(unit, earthBlueprintLocations)
+            rocketProtocol(unit, first_rocket, earthBlueprintLocations)
 
             location = unit.location
             if location.is_on_map() == True and location.is_in_garrison() == False:
