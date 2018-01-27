@@ -17,6 +17,7 @@ allDirections = [bc.Direction.North, bc.Direction.Northeast, bc.Direction.East,
               bc.Direction.West, bc.Direction.Northwest]
 
 factoryCosts = [25, 20, 20, 20, 20]
+
 gc = bc.GameController()
 
 robots = [bc.UnitType.Worker, bc.UnitType.Knight, bc.UnitType.Ranger, bc.UnitType.Mage, bc.UnitType.Healer]
@@ -29,7 +30,7 @@ mageNum = 3
 healerNum = 4
 
 earthMap = gc.starting_map(bc.Planet.Earth)
-marsMap = None
+marsMap = gc.starting_map(bc.Planet.Mars)
 start = None
 enemyStart = None
 roundsBack = 10
