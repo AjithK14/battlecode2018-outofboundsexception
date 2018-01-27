@@ -285,23 +285,24 @@ def astar(unit, dest):
   return;
 
 def reconPath(cameFrom,minKey,start,unit):
-  totalPath = [minKey]
-  while minKey in cameFrom:
-    minKey = cameFrom[minKey]
-    totalPath.append(minKey)
-  dy = totalPath[1][1]-minKey[1]
-  dx = totalPath[1][0]-minKey[0]
-  if dy == 1:
-    if dx == 0: gc.move_robot(unit.id,bc.Direction.North)
-    elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast)
-    else: gc.move_robot(unit.id,bc.Direction.Northwest)
-  elif dy == 0:
-    if dx == 1: gc.move_robot(unit.id,bc.Direction.East)
-    else: gc.move_robot(unit.id,bc.Direction.West) 
-  else:
-    if dx == 0: gc.move_robot(unit.id,bc.Direction.South)
-    elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast)
-    else: gc.move_robot(unit.id,bc.Direction.Southwest)
+  if unit.movement_heat() < 10:
+    totalPath = [minKey]
+    while minKey in cameFrom:
+      minKey = cameFrom[minKey]
+      totalPath.append(minKey)
+    dy = totalPath[1][1]-minKey[1]
+    dx = totalPath[1][0]-minKey[0]
+    if dy == 1:
+      if dx == 0: gc.move_robot(unit.id,bc.Direction.North)
+      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast)
+      else: gc.move_robot(unit.id,bc.Direction.Northwest)
+    elif dy == 0:
+      if dx == 1: gc.move_robot(unit.id,bc.Direction.East)
+      else: gc.move_robot(unit.id,bc.Direction.West) 
+    else:
+      if dx == 0: gc.move_robot(unit.id,bc.Direction.South)
+      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast)
+      else: gc.move_robot(unit.id,bc.Direction.Southwest)
 
 def go_to(unit, dest):  # using bugnav
     # assuming dest is a MapLocation
