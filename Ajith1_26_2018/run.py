@@ -266,7 +266,9 @@ def astar(unit, dest):
         openSet[neighbor] = openSet[neighbor] if neighbor in openSet else math.inf
 
       currentG = gScore[minKey] if minKey in gScore else math.inf
-      tentG = currentG + EDH(minKey[0],minKey[1],neighbor[0],neighbor[1])
+      tentG = (currentG + EDH(minKey[0],minKey[1],neighbor[0],neighbor[1]))
+      isDangerLoc = dmap.get(bc.Location.new_on_map(bc.Maplocation(startingLoc.planet,neighbor[0],neighbor[1])))==0
+      if isDangerLoc: tentG = (int)(tentG/2)
       gScore[neighbor] = gScore[neighbor] if neighbor in gScore else math.inf
       if tentG >= gScore[neighbor]:
         continue
@@ -628,7 +630,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           bdist = ml.distance_squared_to(blueprintLocation)
           if bdist>2:
             #print ("heading towards blueprint")
-            fuzzygoto(unit, blueprintLocation)
+            astar(unit, blueprintLocation)
             return #can't do anything else at this point
 
       if len(kLocs)>0 and unit.movement_heat() < maxRobotMovementHeat: #need to go looking for karbonite
@@ -638,7 +640,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           if kAmt==0:
             kLocs.pop(0)
           else:
-            fuzzygoto(unit,dest)
+            astar(unit,dest)
 
 
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
@@ -656,7 +658,7 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
         else:
           destination=enemyStart
         if destination is not None:
-          fuzzygoto(unit,destination)
+          astar(unit,destination)
 
 def healerProtocol(unit):
     if unit.unit_type == bc.UnitType.Healer:
@@ -669,7 +671,7 @@ def healerProtocol(unit):
           nearbyFriends = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,my_team)
           destination=nearbyFriends[0].location.map_location()
           if destination is not None:
-            fuzzygoto(unit,destination)
+            astar(unit,destination)
 
 def clearRoom(unit):
   if unit.location.is_in_garrison() or unit.location.is_in_space():
@@ -681,7 +683,7 @@ def clearRoom(unit):
     if adjacent.unit_type == bc.UnitType.Rocket and currentLocation.is_adjacent_to(adjLoc): #gtfo, you don't want to be near a rocket
       towardRocket = currentLocation.direction_to(adjLoc)
       awayFromRocket = rotate(towardRocket, 4) #4 means 180 degrees turn
-      fuzzygoto(unit, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
+      astar(unit, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
 
   myTeamAdjacentUnits = gc.sense_nearby_units_by_team(currentLocation, 1, my_team) #apparently this includes unit itself
   for madjacent in myTeamAdjacentUnits:
@@ -690,7 +692,7 @@ def clearRoom(unit):
       if closedIn(madjacent) == True:
         towardFactory = currentLocation.direction_to(adjLoc)
         awayFromFactory = rotate(towardFactory, 4) #4 means 180 degrees turn
-        fuzzygoto(unit, currentLocation.add(awayFromFactory)) #stay fuzzygoto (don't do astar)
+        astar(unit, currentLocation.add(awayFromFactory)) #stay fuzzygoto (don't do astar)
 
 
 if gc.planet() == bc.Planet.Earth:
