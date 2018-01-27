@@ -1,15 +1,3 @@
-"""
-MAJOR CHANGES TO BE TRANSFERRED:
-
-A* METHOD
-DIFFERENTIATING MAP (ALREADY DONE SO JUST PASTE IN THE METHOD)
---a* method assumes map has been created
-------A* ONLY TO BE USED FOR ATTACKERS !!!!!!!
-"""
-
-
-
-
 import battlecode as bc
 import random
 import sys
@@ -34,8 +22,6 @@ gc = bc.GameController()
 robots = [bc.UnitType.Worker, bc.UnitType.Knight, bc.UnitType.Ranger, bc.UnitType.Mage, bc.UnitType.Healer]
 
 ## IDs
-MARSPLANETMAP = gc.starting_map(bc.Planet.Mars)
-EARTHPLANETMAP = gc.starting_map(bc.Planet.Earth)
 workerNum = 0
 knightNum = 1
 rangerNum = 2
@@ -219,7 +205,7 @@ def closedIn(unit):
       continue
     if gc.is_occupiable(newLoc):
       counter += 1
-  if counter > 1:
+  if counter >= 1:
     return True
   else:
     return False
@@ -229,127 +215,61 @@ def onEarth(loc):
   return True
 
 def checkK(loc):
-  b1 = loc.planet == bc.Planet.Earth and 0<=loc.x<EARTHPLANETMAP.width and 0<=loc.y<EARTHPLANETMAP.height
-  b2 = loc.planet == bc.Planet.Mars and 0<=loc.x<MARSPLANETMAP.width and 0<=loc.y<MARSPLANETMAP.height
-  if b1 or b2:
-    return gc.karbonite_at(loc)
-  else:
-    return 0
-def EDH(x1,y1,x2,y2): # EDH stands for Euclidean Distance Heuristic
-  return (int)(((abs(x2-x1)**2)+(abs(y2-y1)**2)))
+  if not onEarth(loc): return 0
+  return gc.karbonite_at(loc)
 
 def astar(unit, dest):
-  closedSet = set()
-  startingLoc=unit.location.map_location()
-  start=(startingLoc.x,startingLoc.y)
-  #print("MY VISION", unit.vision_range)
-  #print("START NODE:", start[0], start[1])
-  unitPlanetWidth = gc.starting_map(startingLoc.planet).width
-  unitPlanetHeight = gc.starting_map(startingLoc.planet).height
-  cameFrom = {}
-  gScore = {} #default value is infinity
-  gScore[start]=0
-  fScore = {} #default value is infinity
-  fScore[start] = EDH(start[0],start[1],dest.x,dest.y)
-  openSet = {(startingLoc.x,startingLoc.y): fScore[start]}
-  while len(openSet) >0:
-    minKeyPair = min(openSet, key=openSet.get)
-    minKey = (minKeyPair[0],minKeyPair[1])
-    del openSet[minKey]
-    #print("CURRENT NODE:", minKey[0], minKey[1])
-    if unit.vision_range-3 <= EDH(start[0],start[1],minKey[0],minKey[1]) or (minKey[0]==dest.x and minKey[1]==dest.y):
-      reconPath(cameFrom,minKey,start,unit)
-      break;
-    
-    closedSet.add(minKey)
-
-    for x in [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:
-      neighbor = (minKey[0]+x[0],minKey[1]+x[1])
-      if EDH(start[0],start[1],neighbor[0],neighbor[1]) > unit.vision_range:
-        continue
-      if (neighbor[0]<0 or neighbor[0]>=unitPlanetWidth or neighbor[1]<0 or neighbor[1]>=unitPlanetHeight):
-        continue
-
-
-      neighborLocation = bc.MapLocation(unit.location.map_location().planet, neighbor[0], neighbor[1])
-
-      shouldExit = neighbor in closedSet or not gc.is_occupiable(neighborLocation)
-
-      shouldExit = shouldExit or not gc.starting_map(startingLoc.planet).is_passable_terrain_at(neighborLocation)
-
-      shouldExit = shouldExit or gc.has_unit_at_location(neighborLocation)
-      
-      shouldExit = shouldExit or not gc.can_move(unit.id, getDirection(x))
-
-      if shouldExit:
-        continue
-      
-
-      if neighbor not in openSet:
-        openSet[neighbor] = openSet[neighbor] if neighbor in openSet else math.inf
-
-      currentG = gScore[minKey] if minKey in gScore else math.inf
-      tentG = (currentG + EDH(minKey[0],minKey[1],neighbor[0],neighbor[1]))
-      isDangerLoc = dmap.get((bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])))==0
-      if isDangerLoc: tentG = (int)(tentG/2)
-      gScore[neighbor] = gScore[neighbor] if neighbor in gScore else math.inf
-      if tentG >= gScore[neighbor]:
-        continue
-
-      cameFrom[neighbor] = minKey
-      gScore[neighbor] = tentG
-      fScore[neighbor] = gScore[neighbor] + EDH(neighbor[0],neighbor[1],dest.x,dest.y)
-  return;
-
-def getDirection(x):
-  dy = x[1]
-  dx = x[0]
-  if dy == 1:
-      if dx == 0: 
-        return bc.Direction.North
-      elif dx == 1:
-        return bc.Direction.Northeast
-      else:
-       return bc.Direction.Northwest
-  elif dy == 0:
-    if dx == 1: 
-      return bc.Direction.East
-    else: 
-      return bc.Direction.West
-  else:
-    if dx == 0: 
-      return bc.Direction.South
-    elif dx == 1:
-      return bc.Direction.Southeast
-    else:
-     return bc.Direction.Southwest
-
-def reconPath(cameFrom,minKey,start,unit):
-  #print(cameFrom)
-  print("Start", start)
-  #print(minKey)
-  if unit.movement_heat() < 10 and gc.is_move_ready(unit.id):
-    totalPath = [minKey]
-    while minKey in cameFrom:
-      minKey = cameFrom[minKey]
-      totalPath.append(minKey)
-    print(totalPath)
-    if len(totalPath) >= 2: 
-      dy = totalPath[-2][1]-totalPath[-1][1]
-      dx = totalPath[-2][0]-totalPath[-1][0]
-      #print(dx, dy)
-      if dy == 1:
-        if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
-        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
-        else: gc.move_robot(unit.id,bc.Direction.Northwest); return
-      elif dy == 0:
-        if dx == 1: gc.move_robot(unit.id,bc.Direction.East); return
-        else: gc.move_robot(unit.id,bc.Direction.West) ; return
-      else:
-        if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
-        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
-        else: print("MOVEMENT HEAT", unit.movement_heat()<10);gc.move_robot(unit.id,bc.Direction.Southwest); return
-  return
+    if not unit.movement_heat() < maxRobotMovementHeat:
+        return
+    currentLocation = unit.location.map_location()
+    if currentLocation.is_adjacent_to(prev) == True:
+      return
+    if currentLocation.direction_to(dest) == bc.Direction.Center:
+      pathDict.pop(unit.id, str(dest))
+      return
+    if (unit.id, str(dest)) in pathDict: #the program has saved where this thing has been trying to go
+        path = pathDict[unit.id, str(dest)]
+        prev = path[0].mapLocation
+        if currentLocation.is_adjacent_to(prev) == False: #had used bugnav recently and not completely finished
+          print (str(currentLocation) + " p:" + str(prev))
+          go_to(unit, prev)
+          return
+        prev = path.popleft().mapLocation
+        if len(path) == 0:
+            pathDict[unit.id, str(dest)] = None
+        d = currentLocation.direction_to(prev)
+        if gc.can_move(unit.id, d):
+            print ("sice me")
+            gc.move_robot(unit.id, d)
+            #path.popleft()
+        else: #at this point, there is clearly an obstable, such as a factory in the way.  Calling bugnav
+            newDest = path[0].mapLocation
+            go_to(unit, newDest)
+    else: #the first time this program is trying to make the unit get to this destination
+        startState = Node(None, currentLocation, 0, dest, unit)
+        prev = set()
+        fringe = []
+        fringe.append(startState)
+        while True:
+            if len(fringe) == 0:
+                return '-'
+            node = heappop(fringe)
+            # print (node.state)
+            if node.mapLocation.distance_squared_to(node.goal) == 0:
+                path = deque()
+                while node != None:
+                    path.append(node)
+                    node = node.parent
+                path.reverse() #because it's in reverse order
+                path.popleft()
+                pathDict[unit.id, str(dest)] = path
+                astar(unit, dest)
+            else:
+                children = node.expand()
+                for i in range(len(children)):
+                    if str(children[i].mapLocation) not in prev:
+                        prev.add(str(children[i].mapLocation))
+                        heappush(fringe, children[i])
 
 def go_to(unit, dest):  # using bugnav
     # assuming dest is a MapLocation
@@ -510,7 +430,7 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
       return
 
 
-    if True: #want good proportions regardles
+    if vrgn == True or vrgn == False: #want good proportions regardles
       currentRobotArray = [0, 0, 0, 0, 0]
 
       currentRobotArray = countUnits(currentRobotArray)
@@ -522,7 +442,7 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
            INITIALKHGARRAY[4] - currentRobotArray[4]]
 
       index = deficit.index(max(deficit))
-      print (robots[index])
+      #print (robots[index])
       robotType = robots[index]
       robotProportions = getRobotProportions(round)
       # build general robots here
@@ -610,7 +530,7 @@ def rocketProtocol(unit, earthBlueprintLocations):
             continue
 
 def coefficient():
-  return 2
+  return 1
 
 def workerProtocol(unit, earthBlueprintLocations, numWorkers):
 
@@ -624,7 +544,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
     harvestKarbonite(unit) #cuz workers need to harvest karbonite before they do anything else
     replicated = False
     d = random.choice(directions)
-    if numWorkers<8:
+    if numWorkers<10:
       replicated=False
       for d in directions:
         if gc.can_replicate(unit.id,d):
@@ -651,12 +571,12 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
         if gc.can_build(unit.id,adjacent.id) and adjacent.health != adjacent.max_health:
           gc.build(unit.id,adjacent.id)
           if adjacent.unit_type == bc.UnitType.Rocket:
-            print("ROCKET BEING BUILT!")
+            # print("ROCKET BEING BUILT!")
             if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
               earthBlueprintLocations.remove(adjacentLocation)
 
           elif adjacent.unit_type == bc.UnitType.Factory:
-            print ("FACTORY BEING BUILT!")
+            #print ("FACTORY BEING BUILT!")
             if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
               earthBlueprintLocations.remove(adjacentLocation)
 
@@ -691,7 +611,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           bdist = ml.distance_squared_to(blueprintLocation)
           if bdist>2:
             #print ("heading towards blueprint")
-            astar(unit, blueprintLocation)
+            fuzzygoto(unit, blueprintLocation)
             return #can't do anything else at this point
 
       if len(kLocs)>0 and unit.movement_heat() < maxRobotMovementHeat: #need to go looking for karbonite
@@ -701,7 +621,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           if kAmt==0:
             kLocs.pop(0)
           else:
-            astar(unit,dest)
+            fuzzygoto(unit,dest)
 
 
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
@@ -719,7 +639,7 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
         else:
           destination=enemyStart
         if destination is not None:
-          astar(unit,destination)
+          fuzzygoto(unit,destination)
 
 def healerProtocol(unit):
     if unit.unit_type == bc.UnitType.Healer:
@@ -734,7 +654,7 @@ def healerProtocol(unit):
             if friend.health < .75*friend.max_health:
               destination=nearbyFriends[0].location.map_location()
               if destination is not None:
-                astar(unit,destination)
+                fuzzygoto(unit,destination)
 
 def clearRoom(unit):
   if unit.location.is_in_garrison() or unit.location.is_in_space():
