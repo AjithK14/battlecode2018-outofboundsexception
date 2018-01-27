@@ -292,17 +292,18 @@ def astar(unit, dest):
   return;
 
 def reconPath(cameFrom,minKey,start,unit):
-  print(cameFrom)
-  print(start)
-  print(minKey)
+  #print(cameFrom)
+  print("Start", start)
+  #print(minKey)
   if unit.movement_heat() < 10:
     totalPath = [minKey]
     while minKey in cameFrom:
       minKey = cameFrom[minKey]
       totalPath.append(minKey)
-    dy = totalPath[1][1]-minKey[1]
-    dx = totalPath[1][0]-minKey[0]
-    print(dx, dy)
+      #print(totalPath)
+    dy = totalPath[-2][1]-totalPath[-1][1]
+    dx = totalPath[-2][0]-totalPath[-1][0]
+    #print(dx, dy)
     if dy == 1:
       if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
       elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
@@ -659,7 +660,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           if kAmt==0:
             kLocs.pop(0)
           else:
-            astar(unit,dest)
+            fuzzygoto(unit,dest)
 
 
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
