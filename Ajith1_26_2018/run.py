@@ -278,7 +278,7 @@ def astar(unit, dest):
       if tentG >= gScore[neighbor]:
         continue
 
-      cameFrom[neighbor] = current
+      cameFrom[neighbor] = minKey
       gScore[neighbor] = tentG
       fScore[neighbor] = gScore[neighbor] + EDH(neighbor[0],neighbor[1],dest.x,dest.y)
   return;
