@@ -239,8 +239,8 @@ def astar(unit, dest):
   closedSet = set()
   startingLoc=unit.location.map_location()
   start=(startingLoc.x,startingLoc.y)
-  unitPlanetWidth = startingLoc.width
-  unitPlanetHeight = startingLoc.height
+  unitPlanetWidth = startingLoc.planet.width
+  unitPlanetHeight = startingLoc.planet.height
   cameFrom = {}
   gScore = {} #default value is infinity
   gScore[start]=0
