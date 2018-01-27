@@ -257,6 +257,8 @@ def astar(unit, dest):
 
     for x in [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:
       neighbor = (minKey[0]+x[0],minKey[1]+x[1])
+      if (neighbor[0]<0 or neighbor[0]>=unitPlanetWidth or neighbor[1]<0 or neighbor[1]>=unitPlanetHeight):
+        continue
       shouldExit = neighbor in closedSet or not gc.is_occupiable(
         (bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])))
       shouldExit = shouldExit or not gc.starting_map(startingLoc.planet).is_passable_terrain_at(  
@@ -264,8 +266,7 @@ def astar(unit, dest):
       
       if shouldExit:
         continue
-      if (neighbor[0]<0 or neighbor[0]>=unitPlanetWidth or neighbor[1]<0 or neighbor[1]>=unitPlanetHeight):
-        continue
+      
 
       if neighbor not in openSet:
         openSet[neighbor] = openSet[neighbor] if neighbor in openSet else math.inf
