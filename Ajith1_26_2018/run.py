@@ -233,12 +233,14 @@ def checkK(loc):
   else:
     return 0
 def EDH(x1,y1,x2,y2): # EDH stands for Euclidean Distance Heuristic
-  return (int)((((x2-x1)**2)+((y2-y1)**2))**0.5)
+  return (int)(((abs(x2-x1)**2)+(abs(y2-y1)**2)))
 
 def astar(unit, dest):
   closedSet = set()
   startingLoc=unit.location.map_location()
   start=(startingLoc.x,startingLoc.y)
+  #print("MY VISION", unit.vision_range)
+  #print("START NODE:", start[0], start[1])
   unitPlanetWidth = gc.starting_map(startingLoc.planet).width
   unitPlanetHeight = gc.starting_map(startingLoc.planet).height
   cameFrom = {}
@@ -248,16 +250,20 @@ def astar(unit, dest):
   fScore[start] = EDH(start[0],start[1],dest.x,dest.y)
   openSet = {(startingLoc.x,startingLoc.y): fScore[start]}
   while len(openSet) >0:
-    minKey = min(openSet, key=openSet.get)
-    
-    if unit.vision_range == EDH(start[0],start[1],minKey[0],minKey[1]) or (minKey[0]==dest.x and minKey[1]==dest.y):
+    minKeyPair = min(openSet, key=openSet.get)
+    minKey = (minKeyPair[0],minKeyPair[1])
+    del openSet[minKey]
+    #print("CURRENT NODE:", minKey[0], minKey[1])
+    if unit.vision_range-3 <= EDH(start[0],start[1],minKey[0],minKey[1]) or (minKey[0]==dest.x and minKey[1]==dest.y):
       reconPath(cameFrom,minKey,start,unit)
       break;
-    del openSet[minKey]
+    
     closedSet.add(minKey)
 
     for x in [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:
       neighbor = (minKey[0]+x[0],minKey[1]+x[1])
+      if EDH(start[0],start[1],neighbor[0],neighbor[1]) > unit.vision_range:
+        continue
       if (neighbor[0]<0 or neighbor[0]>=unitPlanetWidth or neighbor[1]<0 or neighbor[1]>=unitPlanetHeight):
         continue
       shouldExit = neighbor in closedSet or not gc.is_occupiable(
@@ -286,7 +292,9 @@ def astar(unit, dest):
   return;
 
 def reconPath(cameFrom,minKey,start,unit):
-  print("MOVEMENT HEAT", unit.movement_heat());
+  print(cameFrom)
+  print(start)
+  print(minKey)
   if unit.movement_heat() < 10:
     totalPath = [minKey]
     while minKey in cameFrom:
