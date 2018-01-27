@@ -294,6 +294,7 @@ def reconPath(cameFrom,minKey,start,unit):
       totalPath.append(minKey)
     dy = totalPath[1][1]-minKey[1]
     dx = totalPath[1][0]-minKey[0]
+    print(dx, dy)
     if dy == 1:
       if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
       elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
@@ -305,7 +306,7 @@ def reconPath(cameFrom,minKey,start,unit):
       if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
       elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
       else: print("MOVEMENT HEAT", unit.movement_heat());gc.move_robot(unit.id,bc.Direction.Southwest); return
-
+  return
 def go_to(unit, dest):  # using bugnav
     # assuming dest is a MapLocation
     if not unit.movement_heat() < maxRobotMovementHeat:
