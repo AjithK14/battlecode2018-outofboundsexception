@@ -286,6 +286,7 @@ def astar(unit, dest):
   return;
 
 def reconPath(cameFrom,minKey,start,unit):
+  print("MOVEMENT HEAT", unit.movement_heat())
   if unit.movement_heat() < 10:
     totalPath = [minKey]
     while minKey in cameFrom:
