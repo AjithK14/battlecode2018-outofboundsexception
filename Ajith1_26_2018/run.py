@@ -529,7 +529,7 @@ def rocketProtocol(unit, first_rocket, earthBlueprintLocations):
       print ("tf")
 
     if unit.location.is_on_planet(bc.Planet.Earth):
-      if not unit.location.is_in_space() and not unit.location.is_in_garrison():
+      if unit.location.is_on_map():
         location.map_location()
         nearby = gc.sense_nearby_units(location.map_location(), 2)
         #print("nearby units to the rocket", nearby)
