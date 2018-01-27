@@ -272,7 +272,7 @@ def astar(unit, dest):
 
       currentG = gScore[minKey] if minKey in gScore else math.inf
       tentG = (currentG + EDH(minKey[0],minKey[1],neighbor[0],neighbor[1]))
-      isDangerLoc = dmap.get(unit.location.new_on_map(bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])))==0
+      isDangerLoc = dmap.get((bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])))==0
       if isDangerLoc: tentG = (int)(tentG/2)
       gScore[neighbor] = gScore[neighbor] if neighbor in gScore else math.inf
       if tentG >= gScore[neighbor]:
