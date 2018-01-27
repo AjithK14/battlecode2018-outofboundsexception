@@ -738,7 +738,7 @@ while True:
                 if unit.unit_type == bc.UnitType.Mage or unit.unit_type ==bc.UnitType.Ranger or unit.unit_type ==bc.UnitType.Knight:
                   dmap.addDisk(unit.location.map_location(),unit.attack_range(),1)
           
-          numWorkers = 0
+          numWorkers = 0 
 
           for unit in gc.my_units():
             if unit.unit_type== bc.UnitType.Worker:
