@@ -506,7 +506,8 @@ def rocketProtocol(unit, earthBlueprintLocations):
         countNeeded = 5
       if len(garrison) >= countNeeded:
         tempPlanetMap = marsMap
-        tempLoc = bc.MapLocation(bc.Planet.Mars, (int)(tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
+        XYCOORS = findTemploc(tempPlanetMap)#convert this to a weighted average b4hand
+        tempLoc = bc.MapLocation(bc.Planet.Mars,XYCOORS[0],XYCOORS[1])
         if gc.can_launch_rocket(unit.id, tempLoc):
           gc.launch_rocket(unit.id, tempLoc)
           vrgn = False
@@ -532,7 +533,44 @@ def rocketProtocol(unit, earthBlueprintLocations):
 
 def coefficient():
   return 1
-
+def findTemploc(tempPlanetMap):
+  height = tempPlanetMap.height
+  radius = 10
+  avg = {}
+  width = tempPlanetMap.width
+  for x in range(0, width, radius): 
+    for y in range(0, height, radius):
+      temp = bc.MapLocation(bc.Planet.Mars, x ,y)
+      tempml = bc.Location.new_on_map(temp)
+      if(bc.Location.is_on_map(tempml)):
+        weight = gc.karbonite_at(tempml)
+        for z in range(radius):
+          temp = bc.MapLocation(bc.Planet.Mars, x, y+z)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)          
+          temp = bc.MapLocation(bc.Planet.Mars, x+z, y)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)          
+          temp = bc.MapLocation(bc.Planet.Mars, x, y-z)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          temp = bc.MapLocation(bc.Planet.Mars, x-z, y)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          temp = bc.MapLocation(bc.Planet.Mars, x-z, y-z)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          temp = bc.MapLocation(bc.Planet.Mars, x-z, y+z)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          temp = bc.MapLocation(bc.Planet.Mars, x+z, y+z)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          temp = bc.MapLocation(bc.Planet.Mars, x+z, y-z)
+          tempml2 = bc.Location.new_on_map(temp)
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+      avg[(x,y)] = weight
+  return max(avg, key = avg.get)
 def workerProtocol(unit, earthBlueprintLocations, numWorkers):
 
   global maxRocketHealth
@@ -624,6 +662,13 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           else:
             fuzzygoto(unit,dest)
 
+def mageProtocol(unit):
+  if unit.unit_type == bc.UnitType.Mage:
+    if not unit.location.is_in_garrison(): 
+      attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(), unit.attack_range(), enemy_team)
+      for i in range(len(attackableEnemies)):
+        if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[i].id):
+          gc.attack(unit.id, attackableFriends[i].id)
 
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
   if unit.unit_type == bc.UnitType.Ranger:
@@ -730,6 +775,8 @@ while True:
               rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched)
 
               healerProtocol(unit)
+
+              mageProtocol(unit)
 
 
 
