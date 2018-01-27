@@ -261,7 +261,10 @@ def astar(unit, dest):
         unit.Location.new_on_map(bc.Maplocation(startingLoc.planet,neighbor[0],neighbor[1])))
       shouldExit = shouldExit or not gc.starting_map(startingLoc.planet).is_passable_terrain_at(  
         unit.Location.new_on_map(bc.Maplocation(unit.location.map_location().planet,neighbor[0],neighbor[1])))
+      
       if shouldExit:
+        continue
+      if 0<=neighbor[0]<unitPlanetWidth or 0<=neighbor[1]<unitPlanetHeight:
         continue
 
       if neighbor not in openSet:
