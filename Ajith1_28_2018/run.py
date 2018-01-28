@@ -789,6 +789,7 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
         else:
           destination=enemyStart
         if destination is not None:
+          print("WE CAN DO THIS")
           astar(unit,destination)
           
 def knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
