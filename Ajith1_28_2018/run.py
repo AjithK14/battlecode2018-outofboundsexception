@@ -16,6 +16,19 @@ allDirections = [bc.Direction.North, bc.Direction.Northeast, bc.Direction.East,
               bc.Direction.Southeast, bc.Direction.South, bc.Direction.Southwest,
               bc.Direction.West, bc.Direction.Northwest]
 
+beforeActionToDir = [(0,1),(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1)]
+actionToDir = {beforeActionToDir[x]: directions[x] for x in range(0,len(beforeActionToDir))}
+#^converts dy and dx to direction
+
+priorities = {allDirections[0]:{allDirections[1],allDirections[-1]}}
+priorities[allDirections[1]] = {allDirections[2],allDirections[0]}
+priorities[allDirections[2]] = {allDirections[3],allDirections[1]}
+priorities[allDirections[3]] = {allDirections[4],allDirections[2]}
+priorities[allDirections[4]] = {allDirections[3],allDirections[5]}
+priorities[allDirections[5]] = {allDirections[4],allDirections[6]}
+priorities[allDirections[6]] = {allDirections[-1],allDirections[-3]}
+priorities[allDirections[7]] = {allDirections[-2],allDirections[0]}
+#^how to get around if direction isnt given?
 factoryCosts = [25, 20, 20, 20, 20]
 
 gc = bc.GameController()
@@ -171,7 +184,37 @@ def checkK(loc):
 
 def EDH(x1,y1,x2,y2): # EDH stands for Euclidean Distance Heuristic
   return (int)(((abs(x2-x1)**2)+(abs(y2-y1)**2)))
-
+"""
+def astar(unit,dest): # this is actually bfs lolz
+  
+  startingTup = (startingLoc.x,startingLoc.y)
+  openSet = [startingTup]
+  closedSet = set()
+  meta = {}
+  bound = 0
+  meta[startingTup] = (None, None)
+  while bound < len(openSet):
+    parent = openSet[bound]
+    if parent[0] == dest.x and parent[1] == dest.y:
+      return reconPath(parent,meta)
+    for x in [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:
+      neighbor = (parent[0]+x[0],parent[1]+x[1])
+      cX=neighbor[0]; cY = neighbor[1]
+      if neighbor in closedSet:
+        continue
+      try:
+        if not gc.is_occupiable(bc.MapLocation(startingLoc.planet,cX,cY)):
+          continue
+      except Exception as e:
+        thisUselessVariable = 0
+      if not gc.starting_map(startingLoc.planet).is_passable_terrain_at((bc.MapLocation(unit.location.map_location().planet,cX,cY))):
+        continue
+      if neighbor not in openSet:
+        openSet.append(neighbor)
+        meta[neighbor] = (parent,x)
+    closedSet.add(parent)
+    bound+=1
+"""
 def astar(unit, dest):
   
   closedSet = set()
@@ -195,7 +238,7 @@ def astar(unit, dest):
     minKey = (minKeyPair[0],minKeyPair[1])
     bestDistance = openSet[minKey]
     del openSet[minKey]
-    print(bestDistance, "Where I am:", minKey[0],minKey[1])
+    #print(bestDistance, "Where I am:", minKey[0],minKey[1])
     #print("CURRENT NODE:", minKey[0], minKey[1])
     if (minKey[0]==dest.x and minKey[1]==dest.y):
       reconPath(cameFrom,minKey,start,unit)
@@ -205,6 +248,10 @@ def astar(unit, dest):
 
     for x in [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:
       neighbor = (minKey[0]+x[0],minKey[1]+x[1])
+      if neighbor[0] == dest.x and neighbor[1] == dest.y:
+        cameFrom[neighbor] = minKey
+        reconPath(cameFrom,neighbor,start,unit)
+        return
       if (neighbor[0]<0 or neighbor[0]>=unitPlanetWidth or neighbor[1]<0 or neighbor[1]>=unitPlanetHeight):
         continue
       shouldExit = neighbor in closedSet
@@ -213,13 +260,15 @@ def astar(unit, dest):
       
       if shouldExit:
         continue
+      
       """
       if startingLoc.is_within_range(unit.vision_range,bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])):
         if not gc.is_occupiable(bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])):
           continue
       """
+      
       try:
-        if not gc.is_occupiable(bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])):
+        if not gc.has_unit_at_location(bc.Location.new_on_map(startingLoc.planet,neighbor[0],neighbor[1])):
           continue
       except Exception as e:
         thisUselessVariable = 0
