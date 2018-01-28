@@ -230,28 +230,33 @@ def astar(unit, dest):
 
 def reconPath(cameFrom,minKey,start,unit):
   #print(cameFrom)
-  print("Start", start)
+  #print("Start", start)
+
   #print(minKey)
   if unit.movement_heat() < 10 and gc.is_move_ready(unit.id):
     totalPath = [minKey]
     while minKey in cameFrom:
       minKey = cameFrom[minKey]
       totalPath.append(minKey)
-      #print(totalPath)
-    dy = totalPath[-2][1]-totalPath[-1][1]
-    dx = totalPath[-2][0]-totalPath[-1][0]
-    #print(dx, dy)
-    if dy == 1:
-      if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
-      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
-      else: gc.move_robot(unit.id,bc.Direction.Northwest); return
-    elif dy == 0:
-      if dx == 1: gc.move_robot(unit.id,bc.Direction.East); return
-      else: gc.move_robot(unit.id,bc.Direction.West) ; return
-    else:
-      if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
-      elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
-      else: print("MOVEMENT HEAT", unit.movement_heat()<10);gc.move_robot(unit.id,bc.Direction.Southwest); return
+    print(unit.unit_type)
+    print(totalPath)
+    if len(totalPath) >= 2:
+      print("STARTING", totalPath[-1])
+      print("DESTINATION", totalPath[-2])
+      dy = totalPath[-2][1]-totalPath[-1][1]
+      dx = totalPath[-2][0]-totalPath[-1][0]
+      #print(dx, dy)
+      if dy == 1:
+        if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
+        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
+        else: gc.move_robot(unit.id,bc.Direction.Northwest); return
+      elif dy == 0:
+        if dx == 1: gc.move_robot(unit.id,bc.Direction.East); return
+        else: gc.move_robot(unit.id,bc.Direction.West) ; return
+      else:
+        if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
+        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
+        else: print("MOVEMENT HEAT", unit.movement_heat()<10);gc.move_robot(unit.id,bc.Direction.Southwest); return
   return
 # dict where key is round and value is list of areas that shouldn't be walked on, going 2 rounds back
 bannedSquares = dict()
@@ -711,6 +716,13 @@ def mageProtocol(unit, currentRobotArray):
       for i in range(len(attackableEnemies)):
         if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[i].id):
           gc.attack(unit.id, attackableEnemies[i].id)
+        elif gc.is_move_ready(unit.id):
+          nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
+          if len(nearbyEnemies)>0:
+            destination=nearbyEnemies[0].location.map_location()
+          else:
+            destination=enemyStart
+          astar(unit,destination)
 """
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched, dmap, currentRobotArray):
   if unit.unit_type == bc.UnitType.Ranger:
