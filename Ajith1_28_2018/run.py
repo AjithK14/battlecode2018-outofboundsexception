@@ -213,10 +213,11 @@ def astar(unit, dest):
         continue
       
 
-      if neighbor not in openSet:
+      if neighbor not in openSet:                                             
         openSet[neighbor] = openSet[neighbor] if neighbor in openSet else math.inf
 
       currentG = gScore[minKey] if minKey in gScore else math.inf
+      print(currentG)
       tentG = (currentG + EDH(minKey[0],minKey[1],neighbor[0],neighbor[1]))
       #isDangerLoc = dmap.get((bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])))==0
       #if isDangerLoc: tentG = (int)(tentG/2)
