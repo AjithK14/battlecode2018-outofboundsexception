@@ -174,6 +174,7 @@ def EDH(x1,y1,x2,y2): # EDH stands for Euclidean Distance Heuristic
 
 def astar(unit, dest):
   closedSet = set()
+  if enemyStart == None: print("TROLOLOLOLOLOLD")
   startingLoc=unit.location.map_location()
   start=(startingLoc.x,startingLoc.y)
   #print("MY VISION", unit.vision_range)
