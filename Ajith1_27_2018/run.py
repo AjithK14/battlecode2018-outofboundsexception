@@ -609,7 +609,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
             gc.blueprint(unit.id,bc.UnitType.Rocket,q)
             print("ROCKET BLUEPRINTED YAH")
             earthBlueprintLocations.append(unit.location.map_location().add(q))
-            first_rocket = True
+            first_rocket = False
             print ("set first rocket to True")
             break
 
