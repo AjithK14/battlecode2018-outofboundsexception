@@ -225,7 +225,7 @@ def astar(unit, dest):
         openSet[neighbor] = openSet[neighbor] if neighbor in openSet else math.inf
 
       currentG = gScore[minKey] if minKey in gScore else math.inf
-      print(currentG)
+      #print(currentG)
       tentG = (currentG + EDH(minKey[0],minKey[1],neighbor[0],neighbor[1]))
       #isDangerLoc = dmap.get((bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])))==0
       #if isDangerLoc: tentG = (int)(tentG/2)
@@ -236,6 +236,7 @@ def astar(unit, dest):
       cameFrom[neighbor] = minKey
       gScore[neighbor] = tentG
       fScore[neighbor] = gScore[neighbor] + EDH(neighbor[0],neighbor[1],dest.x,dest.y)
+      openSet[neighbor] = fscore[neighbor]
   return;
 
 def reconPath(cameFrom,minKey,start,unit):
