@@ -231,11 +231,11 @@ def EDH(x1,y1,x2,y2): # EDH stands for Euclidean Distance Heuristic
 def astar(unit, dest):
   
   closedSet = set()
-  print(enemyStart.x, enemyStart.y)
+  #print(enemyStart.x, enemyStart.y)
   startingLoc=unit.location.map_location()
   start=(startingLoc.x,startingLoc.y)
-  print("STARTING", start[0], start[1])
-  print("DESTINATION", dest.x,dest.y)
+  #print("STARTING", start[0], start[1])
+  #print("DESTINATION", dest.x,dest.y)
   #print("MY VISION", unit.vision_range)
   #print("START NODE:", start[0], start[1])
   unitPlanetWidth = gc.starting_map(startingLoc.planet).width
@@ -313,7 +313,7 @@ def reconPath(cameFrom,minKey,start,unit):
     while minKey in cameFrom:
       minKey = cameFrom[minKey]
       totalPath.append(minKey)
-    print(unit.unit_type)
+    #print(unit.unit_type)
     #print(totalPath)
     return totalPath
 

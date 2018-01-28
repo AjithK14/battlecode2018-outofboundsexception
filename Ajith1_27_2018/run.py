@@ -19,7 +19,8 @@ allDirections = [bc.Direction.North, bc.Direction.Northeast, bc.Direction.East,
 factoryCosts = [25, 20, 20, 20, 20]
 
 gc = bc.GameController()
-
+numRocketLaunches = 0
+numRocketBuilt=0
 robots = [bc.UnitType.Worker, bc.UnitType.Knight, bc.UnitType.Ranger, bc.UnitType.Mage, bc.UnitType.Healer]
 
 ## IDs
@@ -486,6 +487,8 @@ def rocketProtocol(unit, earthBlueprintLocations):
 
   global firstRocketLaunched
   global maxRocketGarrison
+  global numRocketLaunches
+  global numRocketBuilt
   global first_rocket
   if unit.unit_type == bc.UnitType.Rocket and unit.location.is_on_map():
     global vrgn #so I can access it whenever
@@ -516,12 +519,13 @@ def rocketProtocol(unit, earthBlueprintLocations):
         countNeeded = 4
       if len(garrison) >= countNeeded:
         tempPlanetMap = marsMap
-        tempLoc = bc.MapLocation(bc.Planet.Mars, (int)(tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
+        tempLoc = findLandingLoc(marsMap)#convert this to a weighted average b4hand
         if gc.can_launch_rocket(unit.id, tempLoc):
           gc.launch_rocket(unit.id, tempLoc)
           vrgn = False
           firstRocketLaunched = True
           print ("Rocket Launched!!!")
+          numRocketLaunches+=1
         else:
           print ("Rocket failed to launch")
 
@@ -538,60 +542,56 @@ def rocketProtocol(unit, earthBlueprintLocations):
             print ("rocket unloaded")
             unloadedUnits+=1
             gc.unload(unit.id, d)
+
             continue
 
 def coefficient():
   return 1
-def findTemploc(tempPlanetMap):
-  height = tempPlanetMap.height
-  radius = 10
-  avg = {}
-  width = tempPlanetMap.width
-  for x in range(0, width, radius): 
-    for y in range(0, height, radius):
-      temp = bc.MapLocation(bc.Planet.Mars, x ,y)
-      tempml = bc.Location.new_on_map(temp)
-      if(tempml.is_on_map()):
-        weight = tempPlanetMap.initial_karbonite_at(temp)
-        for z in range(radius):
-          temp = bc.MapLocation(bc.Planet.Mars, x, y+z)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)       
-          temp = bc.MapLocation(bc.Planet.Mars, x+z, y)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)        
-          temp = bc.MapLocation(bc.Planet.Mars, x, y-z)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
-          temp = bc.MapLocation(bc.Planet.Mars, x-z, y)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
-          temp = bc.MapLocation(bc.Planet.Mars, x-z, y-z)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
-          temp = bc.MapLocation(bc.Planet.Mars, x-z, y+z)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
-          temp = bc.MapLocation(bc.Planet.Mars, x+z, y+z)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)   
-          temp = bc.MapLocation(bc.Planet.Mars, x+z, y-z)
-          tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)  
-      avg[(x,y)] = weight
-  return max(avg, key = avg.get)
+def findLandingLoc(tempPlanetMap):
+    height = tempPlanetMap.height
+    width = tempPlanetMap.width
+    posLoc = list()
+    anyLoc = list()
+    for x in range(width):
+      for y in range(width):
+        temp = bc.MapLocation(bc.Planet.Mars, x, y)
+        if not gc.has_unit_at_location(temp) and marsMap.is_passable_terrain_at(temp):
+          posLoc.append(temp)
+          anyLoc.append(temp)
+          
+        elif marsMap.is_passable_terrain_at(temp):
+          anyLoc.append(temp)
+    
+    if len(posLoc) > 0:
+      toRet = random.choice(posLoc)
+    else:
+      toRet = random.choice(anyLoc)
+      
+    return toRet
 def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray):
 
   global maxRocketHealth
   global maxFactoryHealth
   global maxRobotMovementHeat
   global first_rocket
+  global numRocketBuilt
+  global numRocketLaunches
   global firstRocketLaunched
   if unit.unit_type == bc.UnitType.Worker:
 
     harvestKarbonite(unit) #cuz workers need to harvest karbonite before they do anything else
     replicated = False
     d = random.choice(directions)
+    
+    if unit.location.map_location().planet == bc.Planet.Mars:
+      if numWorkers<99999999:
+        replicated=False
+        for d in directions:
+          if gc.can_replicate(unit.id,d):
+            gc.replicate(unit.id,d)
+            replicated=True
+            break
+    
     if numWorkers<7:
       replicated=False
       for d in directions:
@@ -605,9 +605,10 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
 
       if not first_rocket and unit.location.is_on_planet(bc.Planet.Earth) and len(myUnits) > 15:
         for q in directions:
-          if not first_rocket and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
+          if numRocketLaunches == numRocketBuilt and gc.karbonite() > bc.UnitType.Rocket.blueprint_cost() and gc.can_blueprint(unit.id,bc.UnitType.Rocket,q):
             gc.blueprint(unit.id,bc.UnitType.Rocket,q)
             print("ROCKET BLUEPRINTED YAH")
+            numRocketBuilt+=1
             earthBlueprintLocations.append(unit.location.map_location().add(q))
             first_rocket = False
             print ("set first rocket to True")
@@ -652,6 +653,19 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
         if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
           gc.blueprint(unit.id, bc.UnitType.Factory, d)
 
+      if unit.movement_heat() < maxRobotMovementHeat: 
+        for loc in gc.sense_nearby_units_by_type(unit.location.map_location(),unit.vision_range,bc.UnitType.Rocket): #this system handles multiple blueprints, going to the first one
+            #print ("heading towards blueprint")
+          fuzzygoto(unit, loc.location.map_location())
+          return #can't do anything else at this point
+      if unit.movement_heat() < maxRobotMovementHeat: 
+        for blueprintLocation in earthBlueprintLocations: #this system handles multiple blueprints, going to the first one
+          ml = unit.location.map_location()
+          bdist = ml.distance_squared_to(blueprintLocation)
+          if bdist>2:
+            #print ("heading towards blueprint")
+            fuzzygoto(unit, blueprintLocation)
+            return #can't do anything else at this point
       #head toward blueprint locations
       if unit.movement_heat() < maxRobotMovementHeat: 
         for blueprintLocation in earthBlueprintLocations: #this system handles multiple blueprints, going to the first one
@@ -827,6 +841,7 @@ while True:
           for unit in gc.my_units():
             if unit.unit_type== bc.UnitType.Worker:
               numWorkers+=1
+
 
           for unit in gc.my_units():
 
