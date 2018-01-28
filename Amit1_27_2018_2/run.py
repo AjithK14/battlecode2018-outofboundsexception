@@ -78,13 +78,31 @@ class mmap():
         bestLoc=loc
     return bestAmt, bestLoc
 
-passableMap = mmap(earthMap.width,earthMap.height);
-kMap = mmap(earthMap.width,earthMap.height);
-for x in range(earthMap.width):
-  for y in range(earthMap.height):
-    ml = bc.MapLocation(bc.Planet.Earth,x,y);
-    passableMap.set(ml,earthMap.is_passable_terrain_at(ml))
-    kMap.set(ml,earthMap.initial_karbonite_at(ml))
+passableMap = None
+kMap = None
+evalMap = None
+if gc.planet() == bc.Planet.Earth:
+  evalMap = mmap(earthMap.width, earthMap.height)
+  passableMap = mmap(earthMap.width,earthMap.height);
+  kMap = mmap(earthMap.width,earthMap.height);
+  for x in range(earthMap.width):
+    for y in range(earthMap.height):
+      ml = bc.MapLocation(bc.Planet.Earth,x,y);
+      passableMap.set(ml,earthMap.is_passable_terrain_at(ml))
+      kMap.set(ml,earthMap.initial_karbonite_at(ml))
+
+elif gc.planet() == bc.Planet.Mars:
+  evalMap = mmap(marsMap.width, marsMap.height)
+  passableMap = mmap(marsMap.width, marsMap.height);
+  kMap = mmap(marsMap.width, marsMap.height);
+  for x in range(marsMap.width):
+    for y in range(marsMap.height):
+      ml = bc.MapLocation(bc.Planet.Mars,x,y);
+      passableMap.set(ml, marsMap.is_passable_terrain_at(ml))
+      kMap.set(ml, marsMap.initial_karbonite_at(ml))
+
+
+
 workerHarvestAmount = 3
 #generate an ordered list of karbonite locations, sorted by distance to start
 tOrderStart=time.time()
@@ -151,9 +169,14 @@ class Node:
       else:
         return math.sqrt(self.mapLocation.distance_squared_to(self.goal))+self.depth-((.1)*(marsMap.initial_karbonite_at(self.mapLocation))) #change .1 to a function of current karbonite, and round numbers
 def invert(loc):
+  if gc.planet() == bc.Planet.Earth:
     newx = earthMap.width - loc.x
     newy = earthMap.height - loc.y
     return bc.MapLocation(bc.Planet.Earth, newx, newy)
+  else:
+    newx = earthMap.width - loc.x
+    newy = earthMap.height - loc.y
+    return bc.MapLocation(bc.Planet.Mars, newx, newy)
 
 
 def locToStr(loc):
@@ -371,7 +394,7 @@ random.seed(6137)
 # let's start off with some research!
 # we can queue as much as we want.
 
-if gc.planet() == bc.Planet.Earth:  # initializing the map, and starting locations
+if gc.planet() == bc.Planet.Earth or gc.planet() == bc.Planet.Mars:  # initializing the map, and starting locations
     myStart = gc.my_units()[0].location.map_location()
     earthMap = gc.starting_map(bc.Planet.Earth)
     marsMap = gc.starting_map(bc.Planet.Mars)
@@ -448,8 +471,6 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
             gc.unload(unit.id, d)
           break
 
-    if unit.structure_is_built() == False:
-      return
 
 
     if True: #want good proportions regardles
@@ -478,7 +499,7 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
       # build general robots here
       if gc.can_produce_robot(unit.id, robotType):#produce Robots
         gc.produce_robot(unit.id, robotType)
-        print ('produced a robot')
+        #print ('produced a robot')
         
 
 
@@ -608,7 +629,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
 
       if unit.id in whereTo:
         if gc.is_move_ready(unit.id):
-          gc.move_robot(unit.id, whereTo[unit.id])
+          fuzzygoto(unit.id, whereTo[unit.id])
           del whereTo[unit.id]
 
 
@@ -643,7 +664,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
           adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1) 
           for adjacent in adjacentUnits:#once you build, you need to take it out of earthBlueprintLocations
             adjacentLocation = adjacent.location.map_location()
-            if gc.can_build(unit.id,adjacent.id) and adjacent.health != adjacent.max_health:
+            if gc.can_build(unit.id,adjacent.id) and adjacent.structure_is_built() == False:
               gc.build(unit.id,adjacent.id)
               if adjacent.unit_type == bc.UnitType.Rocket:
                 # print("ROCKET BEING BUILT!")
@@ -651,7 +672,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
                   earthBlueprintLocations.remove(adjacentLocation)
 
               elif adjacent.unit_type == bc.UnitType.Factory:
-                #print ("FACTORY BEING BUILT!")
+                print ("FACTORY BEING BUILT!")
                 if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
                   earthBlueprintLocations.remove(adjacentLocation)
 
@@ -673,30 +694,49 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
             if gc.is_attack_ready(unit.id):
               gc.attack(unit.id, attackableEnemies[0].id)'''
 
-          #blueprint factories
+          #blueprint factories, then build
           d = random.choice(directions)
           if gc.karbonite() > coefficient() * bc.UnitType.Factory.blueprint_cost():#blueprint
             if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
               gc.blueprint(unit.id, bc.UnitType.Factory, d)
+              earthBlueprintLocations.append(unit.location.map_location().add(d))
+              adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1) 
+              for adjacent in adjacentUnits:#once you build, you need to take it out of earthBlueprintLocations
+                adjacentLocation = adjacent.location.map_location()
+                if gc.can_build(unit.id,adjacent.id) and adjacent.health != adjacent.max_health:
+                  gc.build(unit.id,adjacent.id)
+                  if adjacent.unit_type == bc.UnitType.Rocket:
+                    # print("ROCKET BEING BUILT!")
+
+                    if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
+                      earthBlueprintLocations.remove(adjacentLocation)
+
+                  elif adjacent.unit_type == bc.UnitType.Factory:
+                    #print ("FACTORY BEING BUILT!")
+                    if adjacent.health == adjacent.max_health and adjacentLocation in earthBlueprintLocations:
+                      earthBlueprintLocations.remove(adjacentLocation)
+
 
           #head toward blueprint locations
           if unit.movement_heat() < maxRobotMovementHeat: 
             for blueprintLocation in earthBlueprintLocations: #this system handles multiple blueprints, going to the first one
               ml = unit.location.map_location()
               bdist = ml.distance_squared_to(blueprintLocation)
-              if bdist>2:
+              if bdist > 1 and bdist < 16:
                 #print ("heading towards blueprint")
                 fuzzygoto(unit, blueprintLocation)
                 return #can't do anything else at this point
 
-        if len(kLocs)>0 and gc.is_move_ready(unit.id): #need to go looking for karbonite
-          dest=kLocs[0]
-          if gc.can_sense_location(dest):
-            kAmt = gc.karbonite_at(dest)
-            if kAmt==0:
-              kLocs.pop(0)
-            else:
-              fuzzygoto(unit,dest)
+        if gc.is_move_ready(unit.id): #need to go looking for karbonite
+          if len(kLocs)>0 and gc.is_move_ready(unit.id): #need to go looking for karbonite
+
+            dest=kLocs[0] #maybe add some dmap stuff here so the worker doesn't go to dangerous locations, if possible
+            if gc.can_sense_location(dest):
+              kAmt = gc.karbonite_at(dest)
+              if kAmt==0:
+                kLocs.pop(0)
+              else:
+                fuzzygoto(unit,dest)
 
       else: #worker is on Mars
         if len(kLocs)>0 and gc.is_move_ready(unit.id): #need to go looking for karbonite
@@ -708,6 +748,25 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
               kLocs.pop(0)
             else:
               fuzzygoto(unit,dest)
+        '''if gc.is_move_ready(unit.id): #need to go looking for karbonite
+          curLoc = unit.location.map_location()
+          minDistance = 999999999
+          minI = -1
+          finalDestination = None
+          for i in range(1, unit.vision_range):
+            if math.sqrt(i) % 1 == 0:
+              allLocations = gc.all_locations_within(curLoc, i)
+              for location in allLocations:
+                dest = location
+                kAmt = gc.karbonite_at(dest)
+                currentDistance = curLoc.distance_squared_to(dest)
+                if currentDistance < minDistance:
+                  minDistance = currentDistance
+                  finalDestination = dest
+                  minI = i
+
+          if minI != -1:
+            fuzzygoto(unit, finalDestination)'''
 
 def mageProtocol(unit, currentRobotArray, rocketLoc):
   if unit.unit_type == bc.UnitType.Mage:
@@ -716,8 +775,7 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
       attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(), unit.attack_range(), enemy_team)
       
       if unit.id in whereTo:
-        if gc.is_move_ready(unit.id):
-          gc.move_robot(unit.id, whereTo[unit.id])
+          fuzzygoto(unit, whereTo[unit.id])
           del whereTo[unit.id]
 
       if len(attackableEnemies) > 0:
@@ -731,9 +789,9 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
               if len(enemyAdjacents) == 0:
                 gc.attack(unit.id, anyEnemyID)
               elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc):
-                toward = curLoc.direction_to(enem)
+                toward = curLoc.direction_to(enemy)
                 away = rotate(toward, 4)
-                fuzzygoto(unit, curLoc.add(enemyAdjacents[0].location.map_location(), away)) #don't want to kms and don't use a*
+                fuzzygoto(unit, curLoc.add(away)) #don't want to kms and don't use a*
                 if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, enemy.id):
                   gc.attack(unit.id, enemy.id)
                   attacked = True
@@ -759,7 +817,7 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
               elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc):
                 toward = curLoc.direction_to(enemy.location.map_location())
                 away = rotate(toward, 4)
-                fuzzygoto(unit, curLoc.add(enemyAdjacents[0].location.map_location().add(away))) #don't want to kms and don't use a*
+                fuzzygoto(unit, curLoc.add(away)) #don't want to kms and don't use a*
                 if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, enemy.id):
                   gc.attack(unit.id, enemy.id)
                   attacked = True
@@ -770,17 +828,17 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
           if len(enemyAdjacents) == 0 and gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, anyEnemyID):
             gc.attack(unit.id, anyEnemyID)
           elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc):
-            toward = curLoc.direction_to(enem)
+            toward = curLoc.direction_to(enemy)
             away = rotate(toward, 4)
 
-            fuzzygoto(unit, curLoc.add(enemyAdjacents[0].location.map_location(), away)) #don't want to kms and don't use a*
+            fuzzygoto(unit, curLoc.add(away)) #don't want to kms and don't use a*
             if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, anyEnemyID):
               gc.attack(unit.id, anyEnemyID)
 
           elif len(enemyAdjacents) >= 1: #and its not me
-            toward = enemyAdjacents[0].location.map_location().direction_to(enemy.map_location())
+            toward = enemyAdjacents[0].location.map_location().direction_to(enemy.location.map_location())
             away = rotate(toward, 4)
-            whereTo[enemyAdjacents[0].id] = enemyAdjacents[0].location.mapLocation.add(away)
+            whereTo[enemyAdjacents[0].id] = enemyAdjacents[0].location.map_location().add(away)
 
       if gc.is_move_ready(unit.id):
         if rocketLoc is not None:
@@ -844,7 +902,7 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
 
       if unit.id in whereTo:
         if gc.is_move_ready(unit.id):
-          gc.move_robot(unit.id, whereTo[unit.id])
+          fuzzygoto(unit.id, whereTo[unit.id])
           del whereTo[unit.id]
 
       curLoc = unit.location.map_location()
@@ -900,7 +958,7 @@ def knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
 
       if unit.id in whereTo:
         if gc.is_move_ready(unit.id):
-          gc.move_robot(unit.id, whereTo[unit.id])
+          fuzzygoto(unit.id, whereTo[unit.id])
           del whereTo[unit.id]
 
       attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
@@ -946,7 +1004,7 @@ def healerProtocol(unit, currentRobotArray, rocketLoc):
 
         if unit.id in whereTo:
           if gc.is_move_ready(unit.id):
-            gc.move_robot(unit.id, whereTo[unit.id])
+            fuzzygoto(unit.id, whereTo[unit.id])
             del whereTo[unit.id] 
 
         attackableFriends = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),my_team)
@@ -981,7 +1039,7 @@ def clearRoom(unit):
   for adjacent in adjacentUnits:#sensing if there is a factory or rocket nearby
     adjLoc = adjacent.location.map_location()
     if adjacent.unit_type == bc.UnitType.Rocket and currentLocation.is_adjacent_to(adjLoc): #gtfo, you don't want to be near a rocket
-      if len(adjacent.structure_garrison()) >= maxRocketGarrison:
+      if len(adjacent.structure_garrison()) >= maxRocketGarrison or gc.planet() == bc.Planet.Mars:
         towardRocket = currentLocation.direction_to(adjLoc)
         awayFromRocket = rotate(towardRocket, 4) #4 means 180 degrees turn
         fuzzygoto(unit, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
