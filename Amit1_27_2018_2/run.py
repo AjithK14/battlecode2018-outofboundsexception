@@ -237,7 +237,7 @@ def astar(unit, dest):
           return
         prev = path.popleft().mapLocation
         if len(path) == 0:
-            pathDict.pop(unit.id, str(dest))
+            pathDict[unit.id, str(dest)] = None
         d = currentLocation.direction_to(prev)
         if gc.can_move(unit.id, d):
             print ("sice me")
@@ -547,28 +547,28 @@ def findTemploc(tempPlanetMap):
         for z in range(radius):
           temp = bc.MapLocation(bc.Planet.Mars, x, y+z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2)          
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)          
           temp = bc.MapLocation(bc.Planet.Mars, x+z, y)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2)          
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)          
           temp = bc.MapLocation(bc.Planet.Mars, x, y-z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2) 
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
           temp = bc.MapLocation(bc.Planet.Mars, x-z, y)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2) 
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
           temp = bc.MapLocation(bc.Planet.Mars, x-z, y-z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2) 
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
           temp = bc.MapLocation(bc.Planet.Mars, x-z, y+z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2) 
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
           temp = bc.MapLocation(bc.Planet.Mars, x+z, y+z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2) 
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
           temp = bc.MapLocation(bc.Planet.Mars, x+z, y-z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars) and marsMap.is_passable_terrain_at(temp):weight += gc.karbonite_at(tempml2) 
+          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
       avg[(x,y)] = weight
   return max(avg, key = avg.get)
 def workerProtocol(unit, earthBlueprintLocations, numWorkers):
@@ -583,7 +583,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
     harvestKarbonite(unit) #cuz workers need to harvest karbonite before they do anything else
     replicated = False
     d = random.choice(directions)
-    if numWorkers<4:
+    if numWorkers<10:
       replicated=False
       for d in directions:
         if gc.can_replicate(unit.id,d):
@@ -603,12 +603,6 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
             first_rocket = True
             print ("set first rocket to True")
             break
-
-      #blueprint factories
-      d = random.choice(directions)
-      if gc.karbonite() > coefficient() * bc.UnitType.Factory.blueprint_cost():#blueprint
-        if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
-          gc.blueprint(unit.id, bc.UnitType.Factory, d)
 
       adjacentUnits = gc.sense_nearby_units(unit.location.map_location(), 1) 
       for adjacent in adjacentUnits:#once you build, you need to take it out of earthBlueprintLocations
@@ -642,6 +636,12 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
       if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
         if gc.is_attack_ready(unit.id):
           gc.attack(unit.id, attackableEnemies[0].id)'''
+
+      #blueprint factories
+      d = random.choice(directions)
+      if gc.karbonite() > coefficient() * bc.UnitType.Factory.blueprint_cost():#blueprint
+        if gc.can_blueprint(unit.id, bc.UnitType.Factory, d):
+          gc.blueprint(unit.id, bc.UnitType.Factory, d)
 
       #head toward blueprint locations
       if unit.movement_heat() < maxRobotMovementHeat: 
