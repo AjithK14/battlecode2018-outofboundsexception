@@ -193,13 +193,15 @@ def astar(unit, dest):
   while len(openSet) >0:
     minKeyPair = min(openSet, key=openSet.get)
     minKey = (minKeyPair[0],minKeyPair[1])
+    bestDistance = openSet[minKey]
     del openSet[minKey]
+    print(bestDistance)
     #print("CURRENT NODE:", minKey[0], minKey[1])
     if (minKey[0]==dest.x and minKey[1]==dest.y):
       reconPath(cameFrom,minKey,start,unit)
       break;
     
-    closedSet.add(minKey)
+    closedSet.add(minKey) 
 
     for x in [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:
       neighbor = (minKey[0]+x[0],minKey[1]+x[1])
