@@ -242,7 +242,7 @@ def reconPath(cameFrom,minKey,start,unit):
     print(totalPath)
     if len(totalPath) >= 2:
       print("STARTING", totalPath[-1])
-      print("DESTINATION", totalPath[-2])
+      print("DESTINATION", totalPath[0])
       dy = totalPath[-2][1]-totalPath[-1][1]
       dx = totalPath[-2][0]-totalPath[-1][0]
       #print(dx, dy)
