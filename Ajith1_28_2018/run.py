@@ -236,7 +236,7 @@ def astar(unit, dest):
       cameFrom[neighbor] = minKey
       gScore[neighbor] = tentG
       fScore[neighbor] = gScore[neighbor] + EDH(neighbor[0],neighbor[1],dest.x,dest.y)
-      openSet[neighbor] = fscore[neighbor]
+      openSet[neighbor] = fScore[neighbor]
   return;
 
 def reconPath(cameFrom,minKey,start,unit):
