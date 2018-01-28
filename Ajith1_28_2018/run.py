@@ -195,7 +195,7 @@ def astar(unit, dest):
     minKey = (minKeyPair[0],minKeyPair[1])
     bestDistance = openSet[minKey]
     del openSet[minKey]
-    print(bestDistance)
+    print(bestDistance, "Where I am:", minKey[0],minKey[1])
     #print("CURRENT NODE:", minKey[0], minKey[1])
     if (minKey[0]==dest.x and minKey[1]==dest.y):
       reconPath(cameFrom,minKey,start,unit)
