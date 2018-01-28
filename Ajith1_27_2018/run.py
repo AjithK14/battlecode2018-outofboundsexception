@@ -298,7 +298,7 @@ def go_to(unit, dest):  # using bugnav
 def rotate(dir, amount):
     ind = directions.index(dir)
     return directions[(ind + amount) % 8]
-
+"""
 def fuzzygoto(unit,dest):
   if unit.location.map_location()==dest or gc.is_move_ready(unit.id) == False or unit.movement_heat() >= maxRobotMovementHeat:
     return
@@ -310,6 +310,15 @@ def fuzzygoto(unit,dest):
       if gc.can_move(unit.id, d):
         gc.move_robot(unit.id,d)
         break
+"""
+def fuzzygoto(unit,dest):
+  if unit.location.map_location()==dest:return
+  toward = unit.location.map_location().direction_to(dest)
+  for tilt in tryRotate:
+    d = rotate(toward,tilt)
+    if gc.can_move(unit.id, d) and gc.is_move_ready(unit.id):
+      gc.move_robot(unit.id,d)
+      break
 def fuzzy_go_to(unit, dest):  
     if not unit.movement_heat() < maxRobotMovementHeat:
         return
@@ -502,20 +511,19 @@ def rocketProtocol(unit, earthBlueprintLocations):
             print('loaded into the rocket!')
 
       garrison = unit.structure_garrison()
-      countNeeded = 5
+      countNeeded = 4
       if vrgn == False:
-        countNeeded = 5
+        countNeeded = 4
       if len(garrison) >= countNeeded:
         tempPlanetMap = marsMap
-        '''XYCOORS = findTemploc(tempPlanetMap)#convert this to a weighted average b4hand
-        tempLoc = bc.MapLocation(bc.Planet.Mars,XYCOORS[0],XYCOORS[1])
+        tempLoc = bc.MapLocation(bc.Planet.Mars, (int)(tempPlanetMap.width / 4), (int)(tempPlanetMap.height / 4)) #convert this to a weighted average b4hand
         if gc.can_launch_rocket(unit.id, tempLoc):
           gc.launch_rocket(unit.id, tempLoc)
           vrgn = False
           firstRocketLaunched = True
           print ("Rocket Launched!!!")
         else:
-          print ("Rocket failed to launch")'''
+          print ("Rocket failed to launch")
 
     elif unit.location.is_on_planet(bc.Planet.Mars):
       garrison = unit.structure_garrison();
@@ -670,7 +678,7 @@ def mageProtocol(unit, currentRobotArray):
       for i in range(len(attackableEnemies)):
         if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[i].id):
           gc.attack(unit.id, attackableEnemies[i].id)
-
+"""
 def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched, dmap, currentRobotArray):
   if unit.unit_type == bc.UnitType.Ranger:
     #print(unit.unit_type)
@@ -680,6 +688,19 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
         if gc.is_attack_ready(unit.id):
           gc.attack(unit.id, attackableEnemies[0].id)
       elif gc.is_move_ready(unit.id):
+        if (rangerNum, str(unit.location.map_location().planet)) in whereTo:
+          res = whereTo[rangerNum, str(unit.location.map_location().planet)]
+          destination = res[0]
+          errorRadius = res[1]
+          curNum = res[2]
+          fuzzygoto(unit,destination)
+          if unit.location.map_location().distance_squared_to(destination) < errorRadius:
+            curNum -= 1
+            if curNum == 0:
+              del whereTo[rangerNum, str(unit.location.map_location().planet)]
+            else:
+              whereTo[rangerNum, str(unit.location.map_location().planet)] = destination, 50, curNum
+            
         nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
         errorRadius = -1
         if len(nearbyEnemies)>0:
@@ -687,14 +708,56 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
         else:
           #adding aggression here
           destination = dmap.findBest(unit.location.map_location(), 50)[1]
+          if destination is None:
+            print ("Damn , destination is none")
           whereTo[rangerNum, str(unit.location.map_location().planet)] = destination, 50, int(currentRobotArray[rangerNum]/2)
           errorRadius = 50
           curNum = int(currentRobotArray[rangerNum]/2)
         if destination is not None:
           fuzzygoto(unit,destination)
           if unit.location.map_location().distance_squared_to(destination) < errorRadius:
-            whereTo[rangerNum, str(unit.location.map_location().planet)] = destination, 50, curNum - 1
-
+            curNum -= 1
+            if curNum == 0:
+              del whereTo[rangerNum, str(unit.location.map_location().planet)]
+            else:
+              whereTo[rangerNum, str(unit.location.map_location().planet)] = destination, 50, curNum
+"""
+def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
+  if unit.unit_type == bc.UnitType.Ranger:
+    #print(unit.unit_type)
+    if not unit.location.is_in_garrison():#can't move from inside a factory
+      attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
+      if len(attackableEnemies)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[0].id):
+        if gc.is_attack_ready(unit.id):
+          gc.attack(unit.id, attackableEnemies[0].id)
+      elif gc.is_move_ready(unit.id):
+        nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
+        """
+        print("MY LOCATION", unit.location.map_location().x,unit.location.map_location().y)
+        for x in nearbyEnemies:
+          print(x.location.map_location().x,x.location.map_location().y)
+        """
+        if len(nearbyEnemies)>0:
+          destination=nearbyEnemies[0].location.map_location()
+        else:
+          destination=enemyStart
+        if destination is not None:
+          fuzzygoto(unit,destination)
+          
+def knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
+  if unit.unit_type == robots[knightNum]:
+    if not unit.location.is_in_garrison():#can't move from inside a factory
+      attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
+      if len(attackableEnemies)>0:
+        if gc.is_attack_ready(unit.id):
+          gc.attack(unit.id, attackableEnemies[0].id)
+      elif gc.is_move_ready(unit.id):
+        nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
+        if len(nearbyEnemies)>0:
+          destination=nearbyEnemies[0].location.map_location()
+        else:
+          destination=enemyStart
+        fuzzygoto(unit,destination)
 def healerProtocol(unit, currentRobotArray):
     if unit.unit_type == bc.UnitType.Healer:
       if not unit.location.is_in_garrison(): 
@@ -782,13 +845,16 @@ while True:
               currentRobotArray = countUnits([0, 0, 0, 0, 0])
 
               workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
+              
+              knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched)
 
-              rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched, dmap, currentRobotArray)
+              rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched)
 
               healerProtocol(unit, currentRobotArray)
 
               mageProtocol(unit, currentRobotArray)
 
+  
 
 
                 
