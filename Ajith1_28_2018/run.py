@@ -173,10 +173,13 @@ def EDH(x1,y1,x2,y2): # EDH stands for Euclidean Distance Heuristic
   return (int)(((abs(x2-x1)**2)+(abs(y2-y1)**2)))
 
 def astar(unit, dest):
+  
   closedSet = set()
   print(enemyStart.x, enemyStart.y)
   startingLoc=unit.location.map_location()
   start=(startingLoc.x,startingLoc.y)
+  print("STARTING", start[0], start[1])
+  print("DESTINATION", dest.x,dest.y)
   #print("MY VISION", unit.vision_range)
   #print("START NODE:", start[0], start[1])
   unitPlanetWidth = gc.starting_map(startingLoc.planet).width
@@ -192,7 +195,7 @@ def astar(unit, dest):
     minKey = (minKeyPair[0],minKeyPair[1])
     del openSet[minKey]
     #print("CURRENT NODE:", minKey[0], minKey[1])
-    if unit.vision_range-3 <= EDH(start[0],start[1],minKey[0],minKey[1]) or (minKey[0]==dest.x and minKey[1]==dest.y):
+    if (minKey[0]==dest.x and minKey[1]==dest.y):
       reconPath(cameFrom,minKey,start,unit)
       break;
     
@@ -200,12 +203,9 @@ def astar(unit, dest):
 
     for x in [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:
       neighbor = (minKey[0]+x[0],minKey[1]+x[1])
-      if EDH(start[0],start[1],neighbor[0],neighbor[1]) > unit.vision_range:
-        continue
       if (neighbor[0]<0 or neighbor[0]>=unitPlanetWidth or neighbor[1]<0 or neighbor[1]>=unitPlanetHeight):
         continue
-      shouldExit = neighbor in closedSet or not gc.is_occupiable(
-        (bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])))
+      shouldExit = neighbor in closedSet
       shouldExit = shouldExit or not gc.starting_map(startingLoc.planet).is_passable_terrain_at(  
         (bc.MapLocation(unit.location.map_location().planet,neighbor[0],neighbor[1])))
       
@@ -242,22 +242,29 @@ def reconPath(cameFrom,minKey,start,unit):
     print(unit.unit_type)
     print(totalPath)
     if len(totalPath) >= 2:
-      print("STARTING", totalPath[-1])
-      print("DESTINATION", totalPath[0])
+      
       dy = totalPath[-2][1]-totalPath[-1][1]
       dx = totalPath[-2][0]-totalPath[-1][0]
       #print(dx, dy)
       if dy == 1:
-        if dx == 0: gc.move_robot(unit.id,bc.Direction.North); return
-        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Northeast); return
-        else: gc.move_robot(unit.id,bc.Direction.Northwest); return
+        if dx == 0 and gc.can_move(unit.id,bc.Direction.North): 
+          gc.move_robot(unit.id,bc.Direction.North); return
+        elif dx ==1 and gc.can_move(unit.id,bc.Direction.Northeast): 
+          gc.move_robot(unit.id,bc.Direction.Northeast); return
+        elif dx == -1 and gc.can_move(unit.id,bc.Direction.Northwest): 
+          gc.move_robot(unit.id,bc.Direction.Northwest); return
       elif dy == 0:
-        if dx == 1: gc.move_robot(unit.id,bc.Direction.East); return
-        else: gc.move_robot(unit.id,bc.Direction.West) ; return
+        if dx == 1  and gc.can_move(unit.id,bc.Direction.East): 
+          gc.move_robot(unit.id,bc.Direction.East); return
+        elif gc.can_move(unit.id,bc.Direction.West): 
+          gc.move_robot(unit.id,bc.Direction.West) ; return
       else:
-        if dx == 0: gc.move_robot(unit.id,bc.Direction.South); return
-        elif dx ==1: gc.move_robot(unit.id,bc.Direction.Southeast); return
-        else: print("MOVEMENT HEAT", unit.movement_heat()<10);gc.move_robot(unit.id,bc.Direction.Southwest); return
+        if dx == 0 and gc.can_move(unit.id,bc.Direction.South): 
+          gc.move_robot(unit.id,bc.Direction.South); return
+        elif dx ==1 and gc.can_move(unit.id,bc.Direction.Southeast): 
+          gc.move_robot(unit.id,bc.Direction.Southeast); return
+        elif dx == -1 and gc.can_move(unit.id,bc.Direction.Southwest): 
+          gc.move_robot(unit.id,bc.Direction.Southwest); return
   return
 # dict where key is round and value is list of areas that shouldn't be walked on, going 2 rounds back
 bannedSquares = dict()
