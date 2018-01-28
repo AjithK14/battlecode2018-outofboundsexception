@@ -807,14 +807,15 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
       attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(), unit.attack_range(), enemy_team)
       
       if unit.id in whereTo:
-        if gc.is_move_ready(unit.id):
+        fuzzygoto(unit.id, whereTo[unit.id])
+        '''if gc.is_move_ready(unit.id):
           if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
             unitToPath[unit.id] = astar(unit,whereTo[unit.id])
             unitToIndex[unit.id] = -2
           if len(unitToPath[unit.id]) >= 2:
             moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
-            unitToIndex[unit.id]-=1
-          del whereTo[unit.id]
+            unitToIndex[unit.id]-=1'''
+        del whereTo[unit.id]
 
       if len(attackableEnemies) > 0:
         anyEnemyID = None
@@ -829,14 +830,15 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
               elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc):
                 toward = curLoc.direction_to(enemy.location.map_location())
                 away = rotate(toward, 4)
-                #fuzzygoto(unit, curLoc.add(away)) #don't want to kms and don't use a*
+                fuzzygoto(unit, curLoc.add(away)) #don't want to kms and don't use a*
+                """
                 if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
                   unitToPath[unit.id] = astar(unit,curLoc.add(away))
                   unitToIndex[unit.id] = -2
                 if len(unitToPath[unit.id]) >= 2:
                   moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
                   unitToIndex[unit.id]-=1
-                
+                """
                 if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, enemy.id):
                   gc.attack(unit.id, enemy.id)
                   attacked = True
@@ -863,12 +865,13 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
                 toward = curLoc.direction_to(enemy.location.map_location())
                 away = rotate(toward, 4)
                 curLoc = unit.location.map_location()
-                if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
+                fuzzygoto(unit, curLoc.add(away)) #don't want to kms and don't use a*
+                '''if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
                   unitToPath[unit.id] = astar(unit,curLoc.add(away))
                   unitToIndex[unit.id] = -2
                 if len(unitToPath[unit.id]) >= 2:
                   moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
-                  unitToIndex[unit.id]-=1 #don't want to kms and don't use a*
+                  unitToIndex[unit.id]-=1 #don't want to kms and don't use a*'''
                 if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, enemy.id):
                   gc.attack(unit.id, enemy.id)
                   attacked = True
@@ -893,7 +896,13 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
 
       if gc.is_move_ready(unit.id):
         if rocketLoc is not None:
-          fuzzygoto(unit, rocketLoc)
+          curLoc = unit.location.map_location()
+          if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
+            unitToPath[unit.id] = astar(unit,rocketLoc)
+            unitToIndex[unit.id] = -2
+          if len(unitToPath[unit.id]) >= 2:
+            moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
+            unitToIndex[unit.id]-=1
         if gc.is_move_ready(unit.id):
           nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
           if len(nearbyEnemies)>0 and curLoc.distance_squared_to(nearbyEnemies[0].location.map_location()) > 4: #don't want to move too close to the enemy
@@ -958,15 +967,16 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
     if not unit.location.is_in_garrison():#can't move from inside a factory
       curLoc = unit.location.map_location()
       if unit.id in whereTo:
-        if gc.is_move_ready(unit.id):
+        fuzzygoto(unit.id, whereTo[unit.id])
+        '''if gc.is_move_ready(unit.id):
           curLoc = unit.location.map_location()
           if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
             unitToPath[unit.id] = astar(unit,whereTo[unit.id])
             unitToIndex[unit.id] = -2
           if len(unitToPath[unit.id]) >= 2:
             moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
-            unitToIndex[unit.id]-=1
-          del whereTo[unit.id]
+            unitToIndex[unit.id]-=1'''
+        del whereTo[unit.id]
 
       
       attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(), unit.attack_range(), enemy_team)
@@ -1005,7 +1015,13 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
         """
       if gc.is_move_ready(unit.id):
         if rocketLoc is not None:
-          fuzzygoto(unit, rocketLoc)
+          curLoc = unit.location.map_location()
+          if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
+            unitToPath[unit.id] = astar(unit,rocketLoc)
+            unitToIndex[unit.id] = -2
+          if len(unitToPath[unit.id]) >= 2:
+            moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
+            unitToIndex[unit.id]-=1
         if gc.is_move_ready(unit.id):
           nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
           if len(nearbyEnemies)>0:
@@ -1056,7 +1072,13 @@ def knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
 
       if gc.is_move_ready(unit.id):
         if rocketLoc is not None:
-          fuzzygoto(unit, rocketLoc)
+          curLoc = unit.location.map_location()
+          if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
+            unitToPath[unit.id] = astar(unit,rocketLoc)
+            unitToIndex[unit.id] = -2
+          if len(unitToPath[unit.id]) >= 2:
+            moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
+            unitToIndex[unit.id]-=1
         if gc.is_move_ready(unit.id):
           nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
           if len(nearbyEnemies)>0:
@@ -1066,7 +1088,7 @@ def knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
           if destination is not None:
             curLoc = unit.location.map_location()
             if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
-              unitToPath[unit.id] = astar(unit,whereTo[unit.id])
+              unitToPath[unit.id] = astar(unit,destination)
               unitToIndex[unit.id] = -2
             if len(unitToPath[unit.id]) >= 2:
               moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
@@ -1078,11 +1100,11 @@ def healerProtocol(unit, currentRobotArray, rocketLoc):
 
         if unit.id in whereTo:
           if gc.is_move_ready(unit.id):
-            gc.move_robot(unit.id, whereTo[unit.id])
+            fuzzygoto(unit.id, whereTo[unit.id])
             del whereTo[unit.id] 
 
         attackableFriends = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),my_team)
-        if len(attackableFriends)>0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableFriends[0].id):
+        if len(attackableFriends) > 0 and  gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableFriends[0].id):
           if gc.is_attack_ready(unit.id):
             gc.attack(unit.id, attackableFriends[0].id)
         elif gc.is_move_ready(unit.id):
@@ -1093,14 +1115,20 @@ def healerProtocol(unit, currentRobotArray, rocketLoc):
               if destination is not None:
                 curLoc = unit.location.map_location()
                 if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
-                  unitToPath[unit.id] = astar(unit,whereTo[unit.id])
+                  unitToPath[unit.id] = astar(unit,destination)
                   unitToIndex[unit.id] = -2
                 if len(unitToPath[unit.id]) >= 2:
                   moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
                   unitToIndex[unit.id]-=1
               else:
                 if rocketLoc is not None:
-                  fuzzygoto(unit, rocketLoc)
+                  curLoc = unit.location.map_location()
+                  if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
+                    unitToPath[unit.id] = astar(unit,rocketLoc)
+                    unitToIndex[unit.id] = -2
+                  if len(unitToPath[unit.id]) >= 2:
+                    moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
+                    unitToIndex[unit.id]-=1
                 if gc.is_move_ready(unit.id):
                   nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
                   if len(nearbyEnemies)>0:
@@ -1110,7 +1138,7 @@ def healerProtocol(unit, currentRobotArray, rocketLoc):
                   if destination is not None:
                     curLoc = unit.location.map_location()
                     if unit.id not in unitToPath or len(unitToPath[unit.id]) + unitToIndex[unit.id] < 0 or gc.has_unit_at_location(bc.MapLocation(curLoc.planet,unitToPath[unit.id][unitToIndex[unit.id]][0],unitToPath[unit.id][unitToIndex[unit.id]][1])):
-                      unitToPath[unit.id] = astar(unit,whereTo[unit.id])
+                      unitToPath[unit.id] = astar(unit,destination)
                       unitToIndex[unit.id] = -2
                     if len(unitToPath[unit.id]) >= 2:
                       moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
