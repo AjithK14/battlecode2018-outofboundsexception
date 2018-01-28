@@ -504,7 +504,7 @@ def rocketProtocol(unit, earthBlueprintLocations):
       if not unit.location.is_in_space() and not unit.location.is_in_garrison():
         unit.location.map_location()
         nearby = gc.sense_nearby_units(unit.location.map_location(), 2)
-        #print("nearby units to the rocket", nearby)
+        print("nearby units to the rocket", nearby)
         for other in nearby:
           if gc.can_load(unit.id,other.id):
             gc.load(unit.id,other.id)
