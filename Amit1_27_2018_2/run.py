@@ -77,6 +77,7 @@ class mmap():
         bestAmt=amt
         bestLoc=loc
     return bestAmt, bestLoc
+
 passableMap = mmap(earthMap.width,earthMap.height);
 kMap = mmap(earthMap.width,earthMap.height);
 for x in range(earthMap.width):
@@ -506,7 +507,7 @@ def rocketProtocol(unit, earthBlueprintLocations):
         countNeeded = 5
       if len(garrison) >= countNeeded:
         tempPlanetMap = marsMap
-        XYCOORS = findTemploc(tempPlanetMap)#convert this to a weighted average b4hand
+        '''XYCOORS = findTemploc(tempPlanetMap)#convert this to a weighted average b4hand
         tempLoc = bc.MapLocation(bc.Planet.Mars,XYCOORS[0],XYCOORS[1])
         if gc.can_launch_rocket(unit.id, tempLoc):
           gc.launch_rocket(unit.id, tempLoc)
@@ -514,7 +515,7 @@ def rocketProtocol(unit, earthBlueprintLocations):
           firstRocketLaunched = True
           print ("Rocket Launched!!!")
         else:
-          print ("Rocket failed to launch")
+          print ("Rocket failed to launch")'''
 
     elif unit.location.is_on_planet(bc.Planet.Mars):
       garrison = unit.structure_garrison();
@@ -543,35 +544,35 @@ def findTemploc(tempPlanetMap):
       temp = bc.MapLocation(bc.Planet.Mars, x ,y)
       tempml = bc.Location.new_on_map(temp)
       if(tempml.is_on_map()):
-        weight = gc.karbonite_at(temp)
+        weight = tempPlanetMap.initial_karbonite_at(temp)
         for z in range(radius):
           temp = bc.MapLocation(bc.Planet.Mars, x, y+z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)          
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)       
           temp = bc.MapLocation(bc.Planet.Mars, x+z, y)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)          
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)        
           temp = bc.MapLocation(bc.Planet.Mars, x, y-z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
           temp = bc.MapLocation(bc.Planet.Mars, x-z, y)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
           temp = bc.MapLocation(bc.Planet.Mars, x-z, y-z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
           temp = bc.MapLocation(bc.Planet.Mars, x-z, y+z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)     
           temp = bc.MapLocation(bc.Planet.Mars, x+z, y+z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)   
           temp = bc.MapLocation(bc.Planet.Mars, x+z, y-z)
           tempml2 = bc.Location.new_on_map(temp)
-          if tempml2.is_on_planet(bc.Planet.Mars):weight += gc.karbonite_at(tempml2)
+          if tempml2.is_on_map():weight += tempPlanetMap.initial_karbonite_at(temp)  
       avg[(x,y)] = weight
   return max(avg, key = avg.get)
-def workerProtocol(unit, earthBlueprintLocations, numWorkers):
+def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray):
 
   global maxRocketHealth
   global maxFactoryHealth
@@ -583,7 +584,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
     harvestKarbonite(unit) #cuz workers need to harvest karbonite before they do anything else
     replicated = False
     d = random.choice(directions)
-    if numWorkers<10:
+    if numWorkers<7:
       replicated=False
       for d in directions:
         if gc.can_replicate(unit.id,d):
@@ -662,7 +663,7 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers):
           else:
             fuzzygoto(unit,dest)
 
-def mageProtocol(unit):
+def mageProtocol(unit, currentRobotArray):
   if unit.unit_type == bc.UnitType.Mage:
     if not unit.location.is_in_garrison(): 
       attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(), unit.attack_range(), enemy_team)
@@ -670,7 +671,7 @@ def mageProtocol(unit):
         if gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, attackableEnemies[i].id):
           gc.attack(unit.id, attackableEnemies[i].id)
 
-def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched):
+def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched, dmap, currentRobotArray):
   if unit.unit_type == bc.UnitType.Ranger:
     #print(unit.unit_type)
     if not unit.location.is_in_garrison():#can't move from inside a factory
@@ -680,14 +681,21 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
           gc.attack(unit.id, attackableEnemies[0].id)
       elif gc.is_move_ready(unit.id):
         nearbyEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.vision_range,enemy_team)
+        errorRadius = -1
         if len(nearbyEnemies)>0:
           destination=nearbyEnemies[0].location.map_location()
         else:
-          destination=enemyStart
+          #adding aggression here
+          destination = dmap.findBest(unit.location.map_location(), 50)[1]
+          whereTo[rangerNum, unit.planet()] = destination, 50, int(currentRobotArray[rangerNum]/2)
+          errorRadius = 50
+          curNum = int(currentRobotArray[rangerNum]/2)
         if destination is not None:
           fuzzygoto(unit,destination)
+          if unit.location.map_location().distance_squared_to(destination) < errorRadius:
+            whereTo[rangerNum, unit.planet()] = destination, 50, curNum - 1
 
-def healerProtocol(unit):
+def healerProtocol(unit, currentRobotArray):
     if unit.unit_type == bc.UnitType.Healer:
       if not unit.location.is_in_garrison(): 
         attackableFriends = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),my_team)
@@ -727,6 +735,7 @@ def clearRoom(unit):
 
 
 if gc.planet() == bc.Planet.Earth:
+  earthMap = gc.starting_map(bc.Planet.Earth)
   w=earthMap.width
   h=earthMap.height
 else:
@@ -770,13 +779,15 @@ while True:
 
               clearRoom(unit)
 
-              workerProtocol(unit, earthBlueprintLocations, numWorkers)
+              currentRobotArray = countUnits([0, 0, 0, 0, 0])
 
-              rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched)
+              workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
 
-              healerProtocol(unit)
+              rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunched, dmap, currentRobotArray)
 
-              mageProtocol(unit)
+              healerProtocol(unit, currentRobotArray)
+
+              mageProtocol(unit, currentRobotArray)
 
 
 
