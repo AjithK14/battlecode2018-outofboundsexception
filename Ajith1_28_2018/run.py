@@ -162,8 +162,8 @@ def locToStr(loc):
 # pathDict = dict() #set that stores a tuple containing the unit, current location, and the path to its destination
 
 def checkK(loc):
-  b1 = loc.planet == bc.Planet.Earth and 0<=loc.x<EARTHPLANETMAP.width and 0<=loc.y<EARTHPLANETMAP.height
-  b2 = loc.planet == bc.Planet.Mars and 0<=loc.x<MARSPLANETMAP.width and 0<=loc.y<MARSPLANETMAP.height
+  b1 = loc.planet == bc.Planet.Earth and 0<=loc.x<earthMap.width and 0<=loc.y<earthMap.height
+  b2 = loc.planet == bc.Planet.Mars and 0<=loc.x<marsMap.width and 0<=loc.y<marsMap.height
   if b1 or b2:
     return gc.karbonite_at(loc)
   else:
