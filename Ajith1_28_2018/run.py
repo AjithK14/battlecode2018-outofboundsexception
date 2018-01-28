@@ -211,8 +211,16 @@ def astar(unit, dest):
       
       if shouldExit:
         continue
-      
-
+      """
+      if startingLoc.is_within_range(unit.vision_range,bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])):
+        if not gc.is_occupiable(bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])):
+          continue
+      """
+      try:
+        if not gc.is_occupiable(bc.MapLocation(startingLoc.planet,neighbor[0],neighbor[1])):
+          continue
+      except Exception as e:
+        thisUselessVariable = 0
       if neighbor not in openSet:                                             
         openSet[neighbor] = openSet[neighbor] if neighbor in openSet else math.inf
 
