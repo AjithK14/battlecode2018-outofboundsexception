@@ -867,7 +867,7 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
               enemyAdjacents = gc.sense_nearby_units_by_team(enemy.location.map_location(), 1, my_team)
               if len(enemyAdjacents) == 0:
                 gc.attack(unit.id, enemy.id)
-              elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc) and (unit.id not in robot_stuck or robot_stuck[unit.id] == False):
+              elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc):
                 toward = curLoc.direction_to(enemy.location.map_location())
                 away = rotate(toward, 4)
                 curLoc = unit.location.map_location()
@@ -887,7 +887,7 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
           enemyAdjacents = gc.sense_nearby_units_by_team(gc.unit(anyEnemyID).location.map_location(), 1, my_team)
           if len(enemyAdjacents) == 0 and gc.is_attack_ready(unit.id) and gc.can_attack(unit.id, anyEnemyID):
             gc.attack(unit.id, anyEnemyID)
-          elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc) and (unit.id not in robot_stuck or robot_stuck[unit.id] == False):
+          elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc):
             toward = curLoc.direction_to(enemy)
             away = rotate(toward, 4)
 
@@ -1159,7 +1159,7 @@ def clearRoom(unit):
   for adjacent in adjacentUnits:#sensing if there is a factory or rocket nearby
     adjLoc = adjacent.location.map_location()
     if adjacent.unit_type == bc.UnitType.Rocket and currentLocation.is_adjacent_to(adjLoc): #gtfo, you don't want to be near a rocket
-      if len(adjacent.structure_garrison()) >= maxRocketGarrison and (unit.id not in robot_stuck or robot_stuck[unit.id] == False):
+      if len(adjacent.structure_garrison()) >= maxRocketGarrison:
         towardRocket = currentLocation.direction_to(adjLoc)
         awayFromRocket = rotate(towardRocket, 4) #4 means 180 degrees turn
         fuzzygoto(unit, currentLocation.add(awayFromRocket)) #stay fuzzygoto (don't do astar)
@@ -1168,7 +1168,7 @@ def clearRoom(unit):
   for madjacent in myTeamAdjacentUnits:
     adjLoc = adjacent.location.map_location()
     if madjacent.unit_type == bc.UnitType.Factory and currentLocation.is_adjacent_to(adjLoc): #if it's one of my own factories, I don't want to be blocking it.
-      if closedIn(madjacent) == True and (unit.id not in robot_stuck or robot_stuck[unit.id] == False):
+      if closedIn(madjacent) == True:
         towardFactory = currentLocation.direction_to(adjLoc)
         awayFromFactory = rotate(towardFactory, 4) #4 means 180 degrees turn
         fuzzygoto(unit, currentLocation.add(awayFromFactory)) #stay fuzzygoto (don't do astar)
