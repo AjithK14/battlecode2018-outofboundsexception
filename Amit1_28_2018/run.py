@@ -19,7 +19,8 @@ allDirections = [bc.Direction.North, bc.Direction.Northeast, bc.Direction.East,
 factoryCosts = [25, 20, 20, 20, 20]
 
 gc = bc.GameController()
-
+numRocketLaunches = 0
+numRocketBuilt=0
 robots = [bc.UnitType.Worker, bc.UnitType.Knight, bc.UnitType.Ranger, bc.UnitType.Mage, bc.UnitType.Healer]
 
 ## IDs
@@ -523,6 +524,8 @@ def rocketProtocol(unit, earthBlueprintLocations):
   global firstRocketLaunched
   global maxRocketGarrison
   global first_rocket
+  global numRocketLaunches
+  global numRocketBuilt
   if unit.unit_type == bc.UnitType.Rocket and unit.location.is_on_map():
     global vrgn #so I can access it whenever
     if unit.location.is_in_space():
@@ -623,6 +626,8 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray)
   global maxFactoryHealth
   global maxRobotMovementHeat
   global first_rocket
+  global numRocketLaunches
+  global numRocketBuilt
   global firstRocketLaunched
   if unit.unit_type == bc.UnitType.Worker:
     if not unit.location.is_in_garrison(): 
