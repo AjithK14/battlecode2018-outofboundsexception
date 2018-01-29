@@ -457,17 +457,17 @@ def factoryProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaun
 
       robotProportions = getRobotProportions(round, currentRobotArray)
 
-      '''deficit = [robotProportions[0] - currentRobotArray[0],
+      deficit = [robotProportions[0] - currentRobotArray[0],
            robotProportions[1] - currentRobotArray[1],
            robotProportions[2] - currentRobotArray[2],
            robotProportions[3] - currentRobotArray[3],
-           robotProportions[4] - currentRobotArray[4]]'''
+           robotProportions[4] - currentRobotArray[4]]
 
-      deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
+      '''deficit = [INITIALKHGARRAY[0] - currentRobotArray[0],
            INITIALKHGARRAY[1] - currentRobotArray[1],
            INITIALKHGARRAY[2] - currentRobotArray[2],
            INITIALKHGARRAY[3] - currentRobotArray[3],
-           INITIALKHGARRAY[4] - currentRobotArray[4]]
+           INITIALKHGARRAY[4] - currentRobotArray[4]]'''
 
       index = deficit.index(max(deficit))
       #print (robots[index])
@@ -709,6 +709,7 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
       attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(), unit.attack_range(), enemy_team)
       
       if unit.id in whereTo:
+        if gc.is_move_ready(unit.id):
           fuzzygoto(unit, whereTo[unit.id])
           del whereTo[unit.id]
 
@@ -721,7 +722,8 @@ def mageProtocol(unit, currentRobotArray, rocketLoc):
             if enemy.unit_type == bc.UnitType.Rocket: #attack the rocket no matter what
               enemyAdjacents = gc.sense_nearby_units_by_team(enemy.location.map_location(), 4, my_team)
               if len(enemyAdjacents) == 0:
-                print ("it says enemy adjacents was 0 but: ", str(curLoc.distance_squared_to(enemy.location.map_location())))
+                print ("it says enemy adjacents was 0 but: ", str(curLoc.distance_squared_to(enemy.location.map_location())), 
+                  str(curLoc) + " " + str(enemy.location.map_location()))
                 gc.attack(unit.id, enemy.id)
               elif len(enemyAdjacents) == 1 and str(enemyAdjacents[0].location.map_location()) == str(curLoc):
                 toward = curLoc.direction_to(enemy.location.map_location())
@@ -837,7 +839,7 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
 
       if unit.id in whereTo:
         if gc.is_move_ready(unit.id):
-          gc.move_robot(unit.id, whereTo[unit.id])
+          fuzzygoto(unit, whereTo[unit.id])
           del whereTo[unit.id]
 
       curLoc = unit.location.map_location()
@@ -893,7 +895,7 @@ def knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
 
       if unit.id in whereTo:
         if gc.is_move_ready(unit.id):
-          fuzzygoto(unit.id, whereTo[unit.id])
+          fuzzygoto(unit, whereTo[unit.id])
           del whereTo[unit.id]
 
       attackableEnemies = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),enemy_team)
@@ -939,7 +941,7 @@ def healerProtocol(unit, currentRobotArray, rocketLoc):
 
         if unit.id in whereTo:
           if gc.is_move_ready(unit.id):
-            gc.move_robot(unit.id, whereTo[unit.id])
+            fuzzygoto(unit, whereTo[unit.id])
             del whereTo[unit.id] 
 
         attackableFriends = gc.sense_nearby_units_by_team(unit.location.map_location(),unit.attack_range(),my_team)
