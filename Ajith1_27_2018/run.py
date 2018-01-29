@@ -842,6 +842,11 @@ def rangerProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
                 unitToIndex[unit.id] = 1
                 moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
                 unitToIndex[unit.id]+=1 
+                break
+            unitToPath[unit.id] = astar(unit,dest)[::-1]
+            unitToIndex[unit.id] = 1
+            moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
+            unitToIndex[unit.id]+=1
           else:
             moveRobotGivenD(unit,unitToPath,unitToIndex[unit.id])
             unitToIndex[unit.id]+=1   
@@ -867,6 +872,11 @@ def knightProtocol(unit, first_rocket, earthBlueprintLocations, firstRocketLaunc
                 unitToIndex[unit.id] = 1
                 moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
                 unitToIndex[unit.id]+=1 
+                break
+            unitToPath[unit.id] = astar(unit,dest)[::-1]
+            unitToIndex[unit.id] = 1
+            moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
+            unitToIndex[unit.id]+=1 
           else:
             moveRobotGivenD(unit,unitToPath,unitToIndex[unit.id])
             unitToIndex[unit.id]+=1
@@ -890,6 +900,11 @@ def healerProtocol(unit, currentRobotArray):
                       unitToIndex[unit.id] = 1
                       moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
                       unitToIndex[unit.id]+=1 
+                      break
+                  unitToPath[unit.id] = astar(unit,dest)[::-1]
+                  unitToIndex[unit.id] = 1
+                  moveRobotGivenD(unit,unitToPath[unit.id],unitToIndex[unit.id])
+                  unitToIndex[unit.id]+=1
                 else:
                   moveRobotGivenD(unit,unitToPath,unitToIndex[unit.id])
                   unitToIndex[unit.id]+=1
