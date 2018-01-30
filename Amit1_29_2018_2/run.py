@@ -615,10 +615,10 @@ def replication(unit, numWorkers, round, earthBlueprintLocations):
 
   if gc.planet() == bc.Planet.Earth:
     inputs = [numWorkers, round, currentKarbonite]
-    weigts = [-.4, -.2, .2]
+    weigts = [-.4, -.2, .01]
   else:
     inputs = [numWorkers, round, currentKarbonite]
-    weigts = [-.7, .2, .2]
+    weigts = [-.7, .2, .005]
 
   total = 0
   for i in range(len(inputs)):
@@ -627,15 +627,33 @@ def replication(unit, numWorkers, round, earthBlueprintLocations):
   if total > 0:
     direction = None
     shouldReplicate = True
-    if round < 150: #still starting out
-      replicationDestination = enemyStart
-      direction = curLoc.direction_to(replicationDestination)
+    if round < 50: #still starting out
+      minDanger = 9999999 #infinite
+      minDangerDirection = bc.Direction.Center
+      if dmap.arr[curLoc.x][curLoc.y][0] > 0:
+        inDanger = True
+        minDanger = dmap.arr[curLoc.x][curLoc.y][0]
 
-    elif round >= 150 and gc.planet() == bc.Planet.Earth:
+      for posdirection in directions:
+        newLoc = curLoc.add(posdirection)
+        if dmap.onMap(newLoc) == False:
+          continue
+        newDanger = dmap.arr[newLoc.x][newLoc.y][0] - min(gc.karbonite_at(newLoc), workerHarvestAmount)
+        if newDanger < minDanger:
+          minDanger = newDanger
+          minDangerDirection = posdirection
+
+      direction = minDangerDirection
+      if direction == bc.Direction.Center:
+        direction = enemyStart
+
+    elif round >= 50 and gc.planet() == bc.Planet.Earth:
       minD = 99999999  #infinite basically
       blueprintToGo = None
       for blueprint in earthBlueprintLocations: #find the closest blueprint and replicate in that direction
         dist = curLoc.distance_squared_to(blueprint)
+        if direction == bc.Direction.Center:
+          print ("What the 2")
         if dist < minD:
           blueprintToGo = blueprint
           minD = dist
@@ -643,11 +661,30 @@ def replication(unit, numWorkers, round, earthBlueprintLocations):
       if blueprintToGo is not None:
         direction = curLoc.direction_to(blueprintToGo)
       else:
-        direction = random.choice(directions)
+        minDanger = 9999999 #infinite
+        minDangerDirection = bc.Direction.Center
+        if dmap.arr[curLoc.x][curLoc.y][0] > 0:
+          inDanger = True
+          minDanger = dmap.arr[curLoc.x][curLoc.y][0]
+
+        for posdirection in directions:
+          newLoc = curLoc.add(posdirection)
+          newDanger = dmap.arr[newLoc.x][newLoc.y][0] - min(gc.karbonite_at(newLoc), workerHarvestAmount)
+          if newDanger < minDanger:
+            minDanger = newDanger
+            minDangerDirection = posdirection
+
+        direction = minDangerDirection
+        if direction == bc.Direction.Center:
+          direction = random.choice(directions)
+
     else: #basically on mars
       direction = random.choice(directions)
 
     for tilt in tryRotate:
+      if direction == bc.Direction.Center:
+        print ("What the 3")
+        break
       d = rotate(direction, tilt)
       if gc.can_replicate(unit.id, d):
         gc.replicate(unit.id, d)
@@ -775,6 +812,8 @@ def workerProtocol(unit, earthBlueprintLocations, numWorkers, currentRobotArray,
 
           for posdirection in directions:
             newLoc = curLoc.add(posdirection)
+            if dmap.on_map(newLoc) == False:
+              continue
             newDanger = dmap.arr[newLoc.x][newLoc.y][0] - min(gc.karbonite_at(newLoc), workerHarvestAmount)
             if newDanger < minDanger:
               minDanger = newDanger
